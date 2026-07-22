@@ -3,13 +3,11 @@
 #include <math.h>
 // COMPLETE
 //Counting Sort for Radix
-bool countingSort(int arry[], int size, int exp)
+// the output of this needs to be an int[]. might need to dymanically allocate memomry
+void countingSort(int arry[], int size, int exp)
 {
 	const int COUNT_LENGTH = 10;
-	if (size == 0)
-	{
-		return false;
-	}
+
 	int count[COUNT_LENGTH];
 	for (int i = 0; i < size; i++)
 	{
@@ -29,7 +27,6 @@ bool countingSort(int arry[], int size, int exp)
 		output[count[digit] - 1] = arry[i];
 		count[digit] -= 1;
 	}
-	return output;
 }
 // COMPLETE 
 // GetMax function to get max of an array. 
@@ -44,6 +41,13 @@ int getMax(int arry[], int size)
 		}
 	}
 	return max;
+}
+void radixSort(int arry[], int size){
+	int max = getMax(arry, size);
+	int exp = 1 ; // initial starting digit place
+	while(max/exp > 0){
+
+	}
 }
 /**
  * TODO Complete this function
