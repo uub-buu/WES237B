@@ -1,6 +1,8 @@
 #include "huffman.h"
 #include <string.h> // Required for strlen
 #include <math.h>
+// COMPLETE
+//Counting Sort for Radix
 bool countingSort(int arry[], int size, int exp)
 {
 	const int COUNT_LENGTH = 10;
@@ -29,7 +31,8 @@ bool countingSort(int arry[], int size, int exp)
 	}
 	return output;
 }
-
+// COMPLETE 
+// GetMax function to get max of an array. 
 int getMax(int arry[], int size)
 {
 	int max = arry[0];
