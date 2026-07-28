@@ -12,9 +12,9 @@
             "program": "${workspaceRoot}/huffman",
             "preLaunchTask": "Make",
             "args": [
-                "input.txt",
-                "code.txt",
-                "output.txt"
+                // "input.txt",
+                // "code.txt",
+                // "output.txt"
             ]
         }
     ]

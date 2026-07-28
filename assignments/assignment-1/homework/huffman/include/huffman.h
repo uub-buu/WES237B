@@ -5,7 +5,14 @@
 #include <stdio.h>
 #include <stdint.h>
 
+typedef struct {
+    const unsigned char* ascii;
+    int count;
+} asciiKey;
 
+void countingSort(asciiKey *arry, int size, int exp);
+int getMax(asciiKey *arry, int size);
+void radixSort(asciiKey arry[], unsigned int size);
 /**
  * @param bufin       Array of characters to encode
  * @param bufinlen    Number of characters in the array
