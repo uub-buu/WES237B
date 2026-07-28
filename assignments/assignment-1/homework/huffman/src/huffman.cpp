@@ -77,7 +77,7 @@ int huffman_encode(const unsigned char *bufin,
     unsigned int freqTableSize = 0;
     // calculate the frequency of each character and add to a table.
     for(int i = 0; bufin[i] != '\0'; i++){
-        tempFreqTable[i].ascii = &bufin[i];
+        tempFreqTable[i].ascii = bufin[i];
         tempFreqTable[i].count+=1;
         freqTableSize++;
     }

@@ -6,13 +6,13 @@
 #include <stdint.h>
 
 typedef struct {
-    const unsigned char* ascii;
-    int count;
+    unsigned char ascii;
+    int count = 0;
 } asciiKey;
 
-void countingSort(asciiKey *arry, int size, int exp);
-int getMax(asciiKey *arry, int size);
-void radixSort(asciiKey arry[], unsigned int size);
+void countingSort(unsigned int *arry, int size, int exp);
+int getMax(const unsigned int * *arry, int size);
+void radixSort(unsigned int * arry, unsigned int size);
 /**
  * @param bufin       Array of characters to encode
  * @param bufinlen    Number of characters in the array
