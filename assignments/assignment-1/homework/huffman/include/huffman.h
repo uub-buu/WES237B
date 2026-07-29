@@ -10,9 +10,9 @@ typedef struct {
     int count = 0;
 } asciiKey;
 
-void countingSort(unsigned int *arry, int size, int exp);
-int getMax(const unsigned int * *arry, int size);
-void radixSort(unsigned int * arry, unsigned int size);
+void countingSort(asciiKey arry[], int size, int exp);
+int getMax(const asciiKey arry[], int size);
+void radixSort(asciiKey arry[], unsigned int size);
 /**
  * @param bufin       Array of characters to encode
  * @param bufinlen    Number of characters in the array

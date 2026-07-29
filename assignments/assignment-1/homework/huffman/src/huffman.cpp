@@ -8,7 +8,7 @@
 
 // COMPLETE
 // Counting Sort for Radix
-void countingSort(asciiKey *arry, int size, int exp)
+void countingSort(asciiKey arry[], int size, int exp)
 {
 
     const int COUNT_LENGTH = 10;
@@ -17,26 +17,29 @@ void countingSort(asciiKey *arry, int size, int exp)
     for (int i = 0; i < size; i++)
     {
         int index = (arry[i].count / exp) % 10;
-        count[index] += 1;
+        count[index]++;
     }
+
     for (int i = 1; i < COUNT_LENGTH; i++)
     {
         count[i] += count[i - 1];
     }
+
     asciiKey output[size];
+
     for (int i = size - 1; i > -1; i--)
     {
         int digit = (arry[i].count / exp) % 10;
 
         output[count[digit] - 1] = arry[i];
-        count[digit] -= 1;
+        count[digit]--;
     }
 
     memcpy(arry, output, size * sizeof(asciiKey));
 }
 // COMPLETE
 // GetMax function to get max of a frequency table.
-int getMax(asciiKey *arry, int size)
+int getMax(asciiKey arry[], int size)
 {
     int max = arry[0].count;
     for (int i = 0; i < size; i++)
@@ -58,9 +61,10 @@ void radixSort(asciiKey arry[], unsigned int size)
     int max_value = getMax(arry, size);
 
     int exp = 1;
-    while ((max_value / exp) > 0){
+    while ((max_value / exp) > 0)
+    {
         countingSort(arry, size, exp);
-        exp*=10;
+        exp *= 10;
     }
 }
 /**
@@ -72,34 +76,36 @@ int huffman_encode(const unsigned char *bufin,
                    unsigned char **pbufout,
                    unsigned int *pbufoutlen)
 {
-    // create initial frequency table that is is size of buffer to avoid overflow
-    asciiKey tempFreqTable[bufinlen];
-    unsigned int freqTableSize = 0;
-    // calculate the frequency of each character and add to a table.
-    for(int i = 0; bufin[i] != '\0'; i++){
-        tempFreqTable[i].ascii = bufin[i];
-        tempFreqTable[i].count+=1;
-        freqTableSize++;
+    // capture all possible ascii characters
+    asciiKey asciiTable[256] = {0};
+    unsigned int frequencySize = 0;
+    for (int i = 0; bufin[i] != '\0'; i++)
+    {
+        unsigned int index = static_cast<unsigned int>(bufin[i]);
+        asciiTable[index].ascii = bufin[i];
+        if (asciiTable[index].count == 0)
+        {
+            frequencySize++;
+        }
+        asciiTable[index].count++;
     }
-    asciiKey freqTable[freqTableSize];
-    // create a frequency table of only the characters within our buffer(im sure theres an easier way)
-    memcpy(freqTable, tempFreqTable, freqTableSize*sizeof(asciiKey));
-	// call radix sort function to sort array by frequency.
-    radixSort(freqTable, freqTableSize);
-	// print for debugging? 
-    for(int i = 0; i < freqTableSize; i++){
-        std::cout << freqTable[i].ascii;
+    // filter any 0 values out.
+    asciiKey frequencyTable[frequencySize];
+    for (unsigned int i = 0, j = 0; i < 256 && j < frequencySize; i++)
+    {
+        if (asciiTable[i].count != 0)
+        {
+            frequencyTable[j] = asciiTable[i];
+            j++;
+        }
+    }
+    radixSort(frequencyTable, frequencySize);
+    // print for debugging?
+    for (int i = 0; i < frequencySize; i++)
+    {
+        std::cout << frequencyTable[i].ascii;
     }
     std::cout << std::endl;
-    // 2. organize by most frequent(radix sort)
-    // d = (num  // exp) % 0;
-    // 3. start with least frequent  on right two leafnodes
-    // 4. parent of these nodes will be addition of both frequencies
-    // 5. move to the left most least frequent leaf nodes
-    // 6. take the parent of the rights and least frequent left node on the right and add
-    // 7. this is their parent
-    // move to the left for most frequent node and add left
-    // need to compare frequency with aded frequencies as well. most frequent is on the right least on the left
 
     return 0;
 }
@@ -114,4 +120,3 @@ int huffman_decode(const unsigned char *bufin,
 {
     return 0;
 }
-
