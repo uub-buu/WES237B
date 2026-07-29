@@ -10,6 +10,12 @@ typedef struct {
     int count = 0;
 } asciiKey;
 
+typedef struct{
+	asciiKey current;
+	asciiKey* leftNode;
+	asciiKey* rightNode;
+}
+
 void countingSort(asciiKey arry[], int size, int exp);
 int getMax(const asciiKey arry[], int size);
 void radixSort(asciiKey arry[], unsigned int size);
