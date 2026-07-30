@@ -1,10 +1,13 @@
 
+
 #include "huffman.h"
 #include <string.h> // Required for strlen
 #include <stdlib.h>
 #include <math.h>
 #include <iostream>
 #include <stdio.h>
+#include <vector>
+#include <queue>
 
 // COMPLETE
 // Counting Sort for Radix
@@ -110,6 +113,33 @@ int huffman_encode(const unsigned char *bufin,
     return 0;
 }
 
+huffnode* huffmanTree(asciiKey table[], int size){
+    std::priority_queue<huffnode> treeHeap;
+    
+    huffnode* left;
+    huffnode* right;
+    
+    for(int i = 0; i < size; i++){
+        treeHeap.push(huffnode{table[i], nullptr,nullptr});
+    }
+    while(treeHeap.size() > 1){
+
+        // pop the lowest two nodes
+        left = new huffnode(treeHeap.top());
+        treeHeap.pop();
+        right = new huffnode(treeHeap.top());
+        treeHeap.pop();
+
+        asciiKey parentData = {'\0', left->data.count + right->data.count};
+        huffnode parent{parentData, left, right};
+
+        treeHeap.push(parent);
+    }
+    
+    huffnode* root = new huffnode(treeHeap.top());
+
+    return root;
+}
 /**
  * TODO Complete this function
  **/

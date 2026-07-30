@@ -10,11 +10,15 @@ typedef struct {
     int count = 0;
 } asciiKey;
 
-typedef struct{
-	asciiKey current;
-	asciiKey* leftNode;
-	asciiKey* rightNode;
-}
+struct huffnode{
+	asciiKey data;
+	huffnode* leftNode;
+	huffnode* rightNode;
+
+	bool operator<(const huffnode& other) const {
+        return data.count > other.data.count;
+    }
+};
 
 void countingSort(asciiKey arry[], int size, int exp);
 int getMax(const asciiKey arry[], int size);
