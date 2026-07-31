@@ -187,7 +187,31 @@ int huffman_encode(const unsigned char *bufin,
     *pbufoutlen = outputBytes;
     // create our new output 
     *pbufout = new unsigned char[*pbufoutlen]();
-    
+    int bitsfilled = 0;
+    uint8_t currentByte = 0;
+    // need to go through each character in the file. 
+    for(int i = 0, byteIndex = 0; i < bufinlen; i++){
+        uint8_t bitcode = codebook[bufin[i]].bits;
+        int bitCount = codebook[bufin[i]].bitCount;
+
+        uint8_t extractedBit = 0;
+        for(int bits = bitCount - 1; bits >=0; --bits){
+            //add bit to our psuedo buffer
+            currentByte = (currentByte << 1) | extractedBit;
+            bitsfilled++;
+            if(bitsfilled == 8){
+                (*pbufout)[byteIndex++] = currentByte;
+                currentByte = 0;
+                bitsfilled = 0;
+            }
+        }
+
+        if(bitsfilled > 0){
+            currentByte = currentByte << (8 - bitsfilled);
+            (*pbufout)[byteIndex] = currentByte; // byteIndex should be at the verry end
+        }
+
+    }
     // unsigned int newSize = *pbufoutlen;
     // for (int i = 0; i < bufinlen; i++)
     // {
