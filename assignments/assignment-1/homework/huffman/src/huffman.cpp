@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <queue>
 #include <unordered_map>
+#include <bitset>
 // COMPLETE
 // Counting Sort for Radix
 
@@ -79,17 +80,19 @@ void radixSort(asciiKey arry[], unsigned int size)
 void generateCodebook(huffnode* node, bitcode code){
     if(node->data.ascii != '\0'){
         codebook.insert({node->data.ascii, code});
+        std::cout << node->data.ascii<< ": ";
+        std::cout << std::bitset<4>(code.bits) << " bitcount=" <<(int)code.bitCount<<std::endl;
     }
-    std::cout << (int)code.bits << std::endl;
     uint8_t bits;
+    uint8_t count = code.bitCount + 1;
     if(node->leftNode != nullptr){
         bits = (code.bits << 1) + 0;
-        generateCodebook(node->leftNode, bitcode{bits, code.bitCount++});
+        generateCodebook(node->leftNode, bitcode{bits, count});
     }
     
     if(node->rightNode != nullptr){
         bits = (code.bits << 1) + 1;
-        generateCodebook(node->rightNode, bitcode{bits, code.bitCount++});
+        generateCodebook(node->rightNode, bitcode{bits, count});
     }
 }
 
@@ -105,12 +108,16 @@ huffnode* huffmanTree(asciiKey table[], int size){
     while(treeHeap.size() > 1){
         // pop the lowest two node
         left = new huffnode(treeHeap.top());
+        std::cout << left->data.ascii << ":"<< left->data.count <<std::endl;
         treeHeap.pop();
         right = new huffnode(treeHeap.top());
+        std::cout << right->data.ascii <<":"<< right->data.count <<std::endl;
+
         treeHeap.pop();
 
         asciiKey parentData = {'\0', left->data.count + right->data.count};
         huffnode parent{parentData, left, right};
+        std::cout << parent.data.ascii << ":" << parent.data.count << std::endl;
 
         treeHeap.push(parent);
     }
