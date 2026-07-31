@@ -13,7 +13,7 @@
 // Counting Sort for Radix
 
 std::unordered_map<unsigned char, bitcode> codebook;
-
+huffnode *root;
 bitcode getCode(unsigned char ascii)
 {
     return codebook[ascii];
@@ -171,7 +171,8 @@ int huffman_encode(const unsigned char *bufin,
     }
     radixSort(frequencyTable, frequencySize);
 
-    huffnode *root = huffmanTree(frequencyTable, frequencySize);
+    root = huffmanTree(frequencyTable, frequencySize);
+
     generateCodebook(root, bitcode{0, 0});
     // generate new output file size.
     unsigned int outputBits = 0;
@@ -215,11 +216,11 @@ int huffman_encode(const unsigned char *bufin,
             (*pbufout)[byteIndex] = currentByte; // byteIndex should be at the very end
         }
     }
-    for (int i = 0; i < outputBytes; i++)
-    {
+    // for (int i = 0; i < outputBytes; i++)
+    // {
 
-        std::cout << "compressed bits is: " << std::bitset<8>((*pbufout)[i])<< std::endl;
-    }
+    //     std::cout << "compressed bits is: " << std::bitset<8>((*pbufout)[i])<< std::endl;
+    // }
     return 0;
 }
 /**
@@ -230,5 +231,16 @@ int huffman_decode(const unsigned char *bufin,
                    unsigned char **pbufout,
                    unsigned int *pbufoutlen)
 {
+    uint8_t currentByte = 0;
+    uint8_t bitShift = 7;
+    for(int i = 0; i < bufinlen; i++){
+        currentByte = bufin[i];
+        uint8_t extracted = 0;
+        while(bitShift >=0){
+            extracted = (currentByte >> bitShift--) & 1;
+            //traverse the huffman tree and try to locate what this bit is until you find the char
+            //need to use a huffnode ptr for tracking
+        }
+    }
     return 0;
 }
