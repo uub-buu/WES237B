@@ -9,7 +9,10 @@ typedef struct {
     unsigned char ascii;
     int count = 0;
 } asciiKey;
-
+struct bitcode{
+    uint8_t bits;
+    uint8_t bitCount = 0;
+};
 struct huffnode{
 	asciiKey data;
 	huffnode* leftNode;
@@ -19,10 +22,12 @@ struct huffnode{
         return data.count > other.data.count;
     }
 };
-
+bitcode getCode(unsigned char ascii);
 void countingSort(asciiKey arry[], int size, int exp);
 int getMax(const asciiKey arry[], int size);
 void radixSort(asciiKey arry[], unsigned int size);
+void generateCodebook(huffnode* node, bitcode code);
+huffnode* huffmanTree(asciiKey table[], int size);
 /**
  * @param bufin       Array of characters to encode
  * @param bufinlen    Number of characters in the array

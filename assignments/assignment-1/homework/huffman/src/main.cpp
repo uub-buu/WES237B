@@ -8,9 +8,15 @@ using namespace std;
 
 int main(int argc, const char * argv[])
 {
-	cout << "Hello we are going to test now" << endl;
-	const char* test_string = "AABCDC";
-	huffman_encode((const unsigned char*)test_string, 7, 0, 0);
+	const char* test_string = "AABACDCDDDDEEEEEF";
+	huffman_encode((const unsigned char*)test_string, 17, 0, 0);
+	std::cout << getCode('A').bits<< std::endl;
+	std::cout << getCode('F').bits<< std::endl;
+	std::cout << getCode('B').bits<< std::endl;
+	std::cout << getCode('C').bits<< std::endl;
+	std::cout << getCode('D').bits<< std::endl;
+	std::cout << getCode('E').bits<< std::endl;
+
 	return 0;
 }
 
