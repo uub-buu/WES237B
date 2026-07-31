@@ -12,12 +12,6 @@ int main(int argc, const char *argv[])
 	unsigned char *code = NULL;
 	uint32_t code_size = 0;
 	huffman_encode((const unsigned char *)test_string, 17, &code, &code_size);
-	std::cout << getCode('A').bits << std::endl;
-	std::cout << getCode('F').bits << std::endl;
-	std::cout << getCode('B').bits << std::endl;
-	std::cout << getCode('C').bits << std::endl;
-	std::cout << getCode('D').bits << std::endl;
-	std::cout << getCode('E').bits << std::endl;
 
 	return 0;
 }

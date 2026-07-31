@@ -179,47 +179,47 @@ int huffman_encode(const unsigned char *bufin,
     {
         outputBits += data.count * codebook[data.ascii].bitCount;
     }
-    std::cout << "new output file bitsize will be: " << outputBits << std::endl;
     // find total bytes needed for our output
     unsigned int outputBytes = (outputBits + 7) / 8;
-    std::cout << "new output file bitsize will be: " << outputBytes << std::endl;
 
     *pbufoutlen = outputBytes;
-    // create our new output 
+    // create our new output
     *pbufout = new unsigned char[*pbufoutlen]();
     int bitsfilled = 0;
     uint8_t currentByte = 0;
-    // need to go through each character in the file. 
-    for(int i = 0, byteIndex = 0; i < bufinlen; i++){
+    // need to go through each character in the file.
+    for (int i = 0, byteIndex = 0; i < bufinlen; i++)
+    {
         uint8_t bitcode = codebook[bufin[i]].bits;
         int bitCount = codebook[bufin[i]].bitCount;
 
         uint8_t extractedBit = 0;
-        for(int bits = bitCount - 1; bits >=0; --bits){
-            //add bit to our psuedo buffer
+        for (int bits = bitCount - 1; bits >= 0; --bits)
+        {
+            // add bit to our psuedo buffer
+            extractedBit = (bitcode >> bits) & 1;
             currentByte = (currentByte << 1) | extractedBit;
             bitsfilled++;
-            if(bitsfilled == 8){
+            if (bitsfilled == 8)
+            {
                 (*pbufout)[byteIndex++] = currentByte;
+
                 currentByte = 0;
                 bitsfilled = 0;
             }
         }
 
-        if(bitsfilled > 0){
+        if (bitsfilled > 0)
+        {
             currentByte = currentByte << (8 - bitsfilled);
-            (*pbufout)[byteIndex] = currentByte; // byteIndex should be at the verry end
+            (*pbufout)[byteIndex] = currentByte; // byteIndex should be at the very end
         }
-
     }
-    // unsigned int newSize = *pbufoutlen;
-    // for (int i = 0; i < bufinlen; i++)
-    // {
-    //     std::cout << i << std::endl;
-    //     newSize += codebook[bufin[i]].size();
-    //     std::cout << newSize << std::endl;
-    // }
-    // we need to put the bitcodes in an unsigned char*
+    for (int i = 0; i < outputBytes; i++)
+    {
+
+        std::cout << "compressed bits is: " << std::bitset<8>((*pbufout)[i])<< std::endl;
+    }
     return 0;
 }
 /**
