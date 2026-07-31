@@ -14,6 +14,7 @@
 
 std::unordered_map<unsigned char, bitcode> codebook;
 huffnode *root;
+unsigned int fileSize;
 bitcode getCode(unsigned char ascii)
 {
     return codebook[ascii];
@@ -143,6 +144,7 @@ int huffman_encode(const unsigned char *bufin,
                    unsigned char **pbufout,
                    unsigned int *pbufoutlen)
 {
+    fileSize = bufinlen;
     // capture all possible ascii characters
     asciiKey asciiTable[128] = {0};
     unsigned int frequencySize = 0;
@@ -223,6 +225,38 @@ int huffman_encode(const unsigned char *bufin,
     // }
     return 0;
 }
+// maybe we return true?
+bool decode(huffnode *parent, huffnode *child, uint8_t bit)
+{
+    // check left and right node until leaf node is encountered(points to nullptr)
+    //  if node bit matches then what? need to return it I guess.
+    //  temp bit buffer
+    huffnode *ptr = child;
+    bool x;
+    uint8_t trackedBit = 2;
+    // setting to some arbitrary value
+    // prevent matching before node position is determined
+
+    // check left first
+    if (ptr == parent->leftNode)
+    {
+        trackedBit = 0;
+    }
+
+    if (ptr == parent->rightNode)
+    {
+        trackedBit = 1;
+    }
+
+    if (bit == trackedBit)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
 /**
  * TODO Complete this function
  **/
@@ -232,14 +266,41 @@ int huffman_decode(const unsigned char *bufin,
                    unsigned int *pbufoutlen)
 {
     uint8_t currentByte = 0;
-    uint8_t bitShift = 7;
-    for(int i = 0; i < bufinlen; i++){
-        currentByte = bufin[i];
+    huffnode *ptr = root;
+    // ideally we should append the coded file with the original file size in the first byte
+    // this would allow us to decode without needing to know the file size
+    // we also need appended the code file with some variation of the huffman tree
+    // all this would be done later on
+    *pbufoutlen = fileSize;
+    *pbufout = new unsigned char[*pbufoutlen]();
+    unsigned int originalIndex = 0;
+    // going through our coded file 1 byte at a time
+    for (int i = 0; i < bufinlen; i++)
+    {
+        uint8_t bitShift = 7;
         uint8_t extracted = 0;
-        while(bitShift >=0){
-            extracted = (currentByte >> bitShift--) & 1;
-            //traverse the huffman tree and try to locate what this bit is until you find the char
-            //need to use a huffnode ptr for tracking
+        currentByte = bufin[i]; // get the first byte in the coded file
+        while (bitShift >= 0)
+        {
+            if (ptr->data.ascii != '\0')
+            {
+                (*pbufout)[originalIndex] = ptr->data.ascii;
+                originalIndex++;
+                ptr = root;
+            }
+            else
+            {
+                extracted = (currentByte >> bitShift--) & 1;
+                bool bitMatched = decode(ptr, ptr->leftNode, extracted);
+                if (bitMatched)
+                {
+                    ptr = ptr->leftNode;
+                }
+                else
+                {
+                    ptr = ptr->rightNode;
+                }
+            }
         }
     }
     return 0;
