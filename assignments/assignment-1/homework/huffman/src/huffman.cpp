@@ -14,7 +14,8 @@
 
 std::unordered_map<unsigned char, bitcode> codebook;
 
-bitcode getCode(unsigned char ascii){
+bitcode getCode(unsigned char ascii)
+{
     return codebook[ascii];
 }
 void countingSort(asciiKey arry[], int size, int exp)
@@ -77,41 +78,48 @@ void radixSort(asciiKey arry[], unsigned int size)
     }
 }
 
-void generateCodebook(huffnode* node, bitcode code){
-    if(node->data.ascii != '\0'){
-        codebook.insert({node->data.ascii, code});
-        std::cout << node->data.ascii<< ": ";
-        std::cout << std::bitset<4>(code.bits) << " bitcount=" <<(int)code.bitCount<<std::endl;
-    }
+void generateCodebook(huffnode *node, bitcode code)
+{
+    // temp bit buffer
     uint8_t bits;
-    uint8_t count = code.bitCount + 1;
-    if(node->leftNode != nullptr){
-        bits = (code.bits << 1) + 0;
-        generateCodebook(node->leftNode, bitcode{bits, count});
+    if (node->data.ascii != '\0')
+    {
+        codebook.insert({node->data.ascii, code});
+        std::cout << node->data.ascii << ": ";
+        std::cout << std::bitset<4>(code.bits) << " bitcount=" << (int)code.bitCount << std::endl;
     }
-    
-    if(node->rightNode != nullptr){
+    if (node->leftNode != nullptr)
+    {
+        bits = (code.bits << 1) + 0;
+        generateCodebook(node->leftNode, bitcode{bits, code.bitCount + 1});
+    }
+
+    if (node->rightNode != nullptr)
+    {
         bits = (code.bits << 1) + 1;
-        generateCodebook(node->rightNode, bitcode{bits, count});
+        generateCodebook(node->rightNode, bitcode{bits, code.bitCount + 1});
     }
 }
 
-huffnode* huffmanTree(asciiKey table[], int size){
+huffnode *huffmanTree(asciiKey table[], int size)
+{
     std::priority_queue<huffnode> treeHeap;
-    
-    huffnode* left;
-    huffnode* right;
-    for(int i = 0; i < size; i++){
+
+    huffnode *left;
+    huffnode *right;
+    for (int i = 0; i < size; i++)
+    {
         treeHeap.push(huffnode{table[i], nullptr, nullptr});
     }
- 
-    while(treeHeap.size() > 1){
+
+    while (treeHeap.size() > 1)
+    {
         // pop the lowest two node
         left = new huffnode(treeHeap.top());
-        std::cout << left->data.ascii << ":"<< left->data.count <<std::endl;
+        std::cout << left->data.ascii << ":" << left->data.count << std::endl;
         treeHeap.pop();
         right = new huffnode(treeHeap.top());
-        std::cout << right->data.ascii <<":"<< right->data.count <<std::endl;
+        std::cout << right->data.ascii << ":" << right->data.count << std::endl;
 
         treeHeap.pop();
 
@@ -121,8 +129,8 @@ huffnode* huffmanTree(asciiKey table[], int size){
 
         treeHeap.push(parent);
     }
-    
-    huffnode* root = new huffnode(treeHeap.top());
+
+    huffnode *root = new huffnode(treeHeap.top());
 
     return root;
 }
@@ -139,9 +147,10 @@ int huffman_encode(const unsigned char *bufin,
     asciiKey asciiTable[128] = {0};
     unsigned int frequencySize = 0;
     for (unsigned int i = 0; i < bufinlen; i++)
-    {   
+    {
         unsigned int index = static_cast<unsigned int>(bufin[i]);
-        if(bufin[i] != '\0'){
+        if (bufin[i] != '\0')
+        {
         }
         asciiTable[index].ascii = bufin[i];
         if (asciiTable[index].count == 0)
@@ -150,7 +159,6 @@ int huffman_encode(const unsigned char *bufin,
         }
         asciiTable[index].count++;
     }
-    std::cout << "--------------------" << std::endl;
     // filter any 0 values out.
     asciiKey frequencyTable[frequencySize];
     for (unsigned int i = 0, j = 0; i < 128 && j < frequencySize; i++)
@@ -163,9 +171,23 @@ int huffman_encode(const unsigned char *bufin,
     }
     radixSort(frequencyTable, frequencySize);
 
-    huffnode* root = huffmanTree(frequencyTable, frequencySize);
-    generateCodebook(root,bitcode{0,0});
+    huffnode *root = huffmanTree(frequencyTable, frequencySize);
+    generateCodebook(root, bitcode{0, 0});
+    // generate new output file size.
+    unsigned int outputBits = 0;
+    for (const auto &data : frequencyTable)
+    {
+        outputBits += data.count * codebook[data.ascii].bitCount;
+    }
+    std::cout << "new output file bitsize will be: " << outputBits << std::endl;
+    // find total bytes needed for our output
+    unsigned int outputBytes = (outputBits + 7) / 8;
+    std::cout << "new output file bitsize will be: " << outputBytes << std::endl;
 
+    *pbufoutlen = outputBytes;
+    // create our new output 
+    *pbufout = new unsigned char[*pbufoutlen]();
+    
     // unsigned int newSize = *pbufoutlen;
     // for (int i = 0; i < bufinlen; i++)
     // {

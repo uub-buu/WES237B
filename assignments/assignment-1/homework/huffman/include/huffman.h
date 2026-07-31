@@ -11,7 +11,7 @@ typedef struct {
 } asciiKey;
 struct bitcode{
     uint8_t bits;
-    uint8_t bitCount = 0;
+    int bitCount = 0;
 };
 struct huffnode{
 	asciiKey data;

@@ -6,24 +6,26 @@
 
 using namespace std;
 
+int main(int argc, const char *argv[])
+{
+	const char *test_string = "AABACDCDDDDEEEEEF";
+	unsigned char *code = NULL;
+	uint32_t code_size = 0;
+	huffman_encode((const unsigned char *)test_string, 17, &code, &code_size);
+	std::cout << getCode('A').bits << std::endl;
+	std::cout << getCode('F').bits << std::endl;
+	std::cout << getCode('B').bits << std::endl;
+	std::cout << getCode('C').bits << std::endl;
+	std::cout << getCode('D').bits << std::endl;
+	std::cout << getCode('E').bits << std::endl;
+
+	return 0;
+}
+
 // int main(int argc, const char * argv[])
 // {
-// 	const char* test_string = "AABACDCDDDDEEEEEF";
-// 	huffman_encode((const unsigned char*)test_string, 17, 0, 0);
-// 	std::cout << getCode('A').bits<< std::endl;
-// 	std::cout << getCode('F').bits<< std::endl;
-// 	std::cout << getCode('B').bits<< std::endl;
-// 	std::cout << getCode('C').bits<< std::endl;
-// 	std::cout << getCode('D').bits<< std::endl;
-// 	std::cout << getCode('E').bits<< std::endl;
-
-// 	return 0;
-// }
-
-// int main(int argc, const char * argv[])
-// {    
 //     cout << "WES237B Assignment 1\n";
-    
+
 // 	if(argc < 4)
 // 	{
 // 		cout << "Usage: " << argv[0] << " <input.txt> <code.txt> <output.txt>" << endl;
@@ -36,9 +38,8 @@ using namespace std;
 
 // 	// Read input
 // 	ifstream in(in_filename);
-	
-// 	string in_contents((istreambuf_iterator<char>(in)), istreambuf_iterator<char>());
 
+// 	string in_contents((istreambuf_iterator<char>(in)), istreambuf_iterator<char>());
 
 // 	// Encode
 // 	unsigned char* code = NULL;
@@ -50,7 +51,6 @@ using namespace std;
 // 	if(ret != 0)
 // 	{ cerr << "Huffman encode failed with code " << ret << endl; return EXIT_FAILURE; }
 
-
 // 	// Save code to file
 // 	if(code)
 // 	{
@@ -61,11 +61,9 @@ using namespace std;
 // 		}
 // 	}
 
-
 // 	// Read code from the same file
 // 	ifstream in_code(code_filename);
 // 	string code_contents((istreambuf_iterator<char>(in_code)), istreambuf_iterator<char>());
-
 
 // 	// Decode
 // 	unsigned char* decode = NULL;
@@ -76,7 +74,6 @@ using namespace std;
 // 	if(ret != 0)
 // 	{ cerr << "Huffman decode failed with code " << ret << endl; return EXIT_FAILURE; }
 
-
 // 	// Save output to file
 // 	if(decode)
 // 	{
@@ -84,11 +81,9 @@ using namespace std;
 // 		out << (const char*)decode;
 // 	}
 
-
 // 	// Free memory
 // 	if(code){ free(code); }
 // 	if(decode){ free(decode); }
-
 
 // 	// Check output
 // 	string diff_command = "diff " + string(in_filename) + " " + string(out_filename);
@@ -104,7 +99,6 @@ using namespace std;
 // 		cout << "FAILURE" << endl;
 // 		return EXIT_FAILURE;
 // 	}
-
 
 //     return 0;
 // }
