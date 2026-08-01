@@ -75,7 +75,7 @@ void callVectorAdd2Kernel(Matrix *a, Matrix *b, Matrix *out, cl_context *context
     size_t buffer_size = size_a * sizeof(int);
     //@@ Create memory buffers for input and output vectors
     device_input_1 = clCreateBuffer(
-        context,
+        *context,
         CL_MEM_READ_WRITE,
         buffer_size,
         NULL,
@@ -83,7 +83,7 @@ void callVectorAdd2Kernel(Matrix *a, Matrix *b, Matrix *out, cl_context *context
     CHECK_ERR(err, "clCreateBuffer input device 1");
 
     device_input_2 = clCreateBuffer(
-        context,
+        *context,
         CL_MEM_READ_WRITE,
         buffer_size,
         NULL,
@@ -91,7 +91,7 @@ void callVectorAdd2Kernel(Matrix *a, Matrix *b, Matrix *out, cl_context *context
     CHECK_ERR(err, "clCreateBuffer input device 2");
 
     device_output = clCreateBuffer(
-        context,
+        *context,
         CL_MEM_READ_WRITE,
         buffer_size,
         NULL,
@@ -164,8 +164,8 @@ void callVectorAdd2Kernel(Matrix *a, Matrix *b, Matrix *out, cl_context *context
     clReleaseMemObject(device_input_2);
     clReleaseMemObject(device_output);
     // idk if this is needed? 
-    // clReleaseKernel(kernel);
-    // clReleaseProgram(program);
+    clReleaseKernel(kernel);
+    clReleaseProgram(program);
     // Release Host Memory
     free(kernel_source);
 }
@@ -186,10 +186,10 @@ void part1(Matrix *host_input_1, Matrix *host_input_2, Matrix *host_input_3, Mat
     callVectorAdd2Kernel(host_output, host_input_4, host_output, &context, &queue);
 
     // Prints the results
-    // for (unsigned int i = 0; i < host_output.shape[0] * host_output.shape[1]; i++)
-    // {
-    //     printf("C[%u]: %d == %d\n", i, host_output.data[i], answer.data[i]);
-    // }
+    for (unsigned int i = 0; i < (*host_output).shape[0] * (*host_output).shape[1]; i++)
+    {
+        printf("C[%u]: %d == %d\n", i, (*host_output).data[i], (*answer).data[i]);
+    }
 
     // Check whether the answer matches the output
     CheckMatrix(answer, host_output);
@@ -233,7 +233,7 @@ void callVectorAdd4Kernel(Matrix *a, Matrix *b, Matrix *c, Matrix *d, Matrix *ou
     size_t buffer_size = size_a * sizeof(int);
     //@@ Create memory buffers for input and output vectors
     device_input_1 = clCreateBuffer(
-        context,
+        *context,
         CL_MEM_READ_WRITE,
         buffer_size,
         NULL,
@@ -241,14 +241,15 @@ void callVectorAdd4Kernel(Matrix *a, Matrix *b, Matrix *c, Matrix *d, Matrix *ou
     CHECK_ERR(err, "clCreateBuffer input device 1");
 
     device_input_2 = clCreateBuffer(
-        context,
+        *context,
         CL_MEM_READ_WRITE,
         buffer_size,
         NULL,
         &err);
     CHECK_ERR(err, "clCreateBuffer input device 2");
+    
     device_input_3 = clCreateBuffer(
-        context,
+        *context,
         CL_MEM_READ_WRITE,
         buffer_size,
         NULL,
@@ -256,7 +257,7 @@ void callVectorAdd4Kernel(Matrix *a, Matrix *b, Matrix *c, Matrix *d, Matrix *ou
     CHECK_ERR(err, "clCreateBuffer input device 3");
 
     device_input_4 = clCreateBuffer(
-        context,
+        *context,
         CL_MEM_READ_WRITE,
         buffer_size,
         NULL,
@@ -264,7 +265,7 @@ void callVectorAdd4Kernel(Matrix *a, Matrix *b, Matrix *c, Matrix *d, Matrix *ou
     CHECK_ERR(err, "clCreateBuffer input device 4");
 
     device_output = clCreateBuffer(
-        context,
+        *context,
         CL_MEM_READ_WRITE,
         buffer_size,
         NULL,
@@ -272,7 +273,8 @@ void callVectorAdd4Kernel(Matrix *a, Matrix *b, Matrix *c, Matrix *d, Matrix *ou
     CHECK_ERR(err, "clCreateBuffer output device");
     //@@ Copy memory to the GPU here
     err = clEnqueueWriteBuffer(
-        *queue, device_input_1,
+        *queue, 
+        device_input_1,
         CL_TRUE,
         0,
         buffer_size,
@@ -295,7 +297,8 @@ void callVectorAdd4Kernel(Matrix *a, Matrix *b, Matrix *c, Matrix *d, Matrix *ou
     CHECK_ERR(err, "clEnqueueWriteBuffer input device 2");
 
     err = clEnqueueWriteBuffer(
-        *queue, device_input_3,
+        *queue, 
+        device_input_3,
         CL_TRUE,
         0,
         buffer_size,
@@ -365,8 +368,8 @@ void callVectorAdd4Kernel(Matrix *a, Matrix *b, Matrix *c, Matrix *d, Matrix *ou
     clReleaseMemObject(device_output);
 
     // idk if this is needed? 
-    // clReleaseKernel(kernel);
-    // clReleaseProgram(program);
+    clReleaseKernel(kernel);
+    clReleaseProgram(program);
 
     // Release Host Memory
     free(kernel_source);
@@ -386,10 +389,10 @@ void part2(Matrix *host_input_1, Matrix *host_input_2, Matrix *host_input_3, Mat
     callVectorAdd4Kernel(host_input_1, host_input_2, host_input_3, host_input_4, host_output, &context, &queue);
 
     // Prints the results
-    // for (unsigned int i = 0; i < host_output.shape[0] * host_output.shape[1]; i++)
-    // {
-    //     printf("C[%u]: %d == %d\n", i, host_output.data[i], answer.data[i]);
-    // }
+    for (unsigned int i = 0; i < (*host_output).shape[0] * (*host_output).shape[1]; i++)
+    {
+        printf("C[%u]: %d == %d\n", i, (*host_output).data[i], (*answer).data[i]);
+    }
 
     // Check whether the answer matches the output
     CheckMatrix(answer, host_output);
