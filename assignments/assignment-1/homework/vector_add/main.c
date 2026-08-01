@@ -186,10 +186,10 @@ void part1(Matrix *host_input_1, Matrix *host_input_2, Matrix *host_input_3, Mat
     callVectorAdd2Kernel(host_output, host_input_4, host_output, &context, &queue);
 
     // Prints the results
-    for (unsigned int i = 0; i < (*host_output).shape[0] * (*host_output).shape[1]; i++)
-    {
-        printf("C[%u]: %d == %d\n", i, (*host_output).data[i], (*answer).data[i]);
-    }
+    // for (unsigned int i = 0; i < (*host_output).shape[0] * (*host_output).shape[1]; i++)
+    // {
+    //     printf("C[%u]: %d == %d\n", i, (*host_output).data[i], (*answer).data[i]);
+    // }
 
     // Check whether the answer matches the output
     CheckMatrix(answer, host_output);
@@ -296,13 +296,13 @@ void callVectorAdd4Kernel(Matrix *a, Matrix *b, Matrix *c, Matrix *d, Matrix *ou
         NULL);
     CHECK_ERR(err, "clEnqueueWriteBuffer input device 2");
 
-    err = clEnqueueWriteBuffer(
+    err |= clEnqueueWriteBuffer(
         *queue, 
         device_input_3,
         CL_TRUE,
         0,
         buffer_size,
-        a->data,
+        c->data,
         0,
         NULL,
         NULL);
@@ -314,7 +314,7 @@ void callVectorAdd4Kernel(Matrix *a, Matrix *b, Matrix *c, Matrix *d, Matrix *ou
         CL_TRUE,
         0,
         buffer_size,
-        b->data,
+        d->data,
         0,
         NULL,
         NULL);
@@ -389,10 +389,10 @@ void part2(Matrix *host_input_1, Matrix *host_input_2, Matrix *host_input_3, Mat
     callVectorAdd4Kernel(host_input_1, host_input_2, host_input_3, host_input_4, host_output, &context, &queue);
 
     // Prints the results
-    for (unsigned int i = 0; i < (*host_output).shape[0] * (*host_output).shape[1]; i++)
-    {
-        printf("C[%u]: %d == %d\n", i, (*host_output).data[i], (*answer).data[i]);
-    }
+    // for (unsigned int i = 0; i < (*host_output).shape[0] * (*host_output).shape[1]; i++)
+    // {
+    //     printf("C[%u]: %d == %d\n", i, (*host_output).data[i], (*answer).data[i]);
+    // }
 
     // Check whether the answer matches the output
     CheckMatrix(answer, host_output);
@@ -449,14 +449,14 @@ int main(int argc, char *argv[])
 
     // =================================================================
     printf("==============Starting Program 1==============\n");
-    start = clock();
+    // start = clock();
 
-    part1(&host_input_1, &host_input_2, &host_input_3, &host_input_4, &host_output, &answer, program_1_output_file);
+    // part1(&host_input_1, &host_input_2, &host_input_3, &host_input_4, &host_output, &answer, program_1_output_file);
 
-    end = clock();
-    cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC * 1000; // Convert to milliseconds
+    // end = clock();
+    // cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC * 1000; // Convert to milliseconds
 
-    printf("Execution time: %.2fms\n", cpu_time_used);
+    // printf("Execution time: %.2fms\n", cpu_time_used);
     printf("==============Finished Program 1==============\n");
 
     // Cleanup and prepare for second program.
