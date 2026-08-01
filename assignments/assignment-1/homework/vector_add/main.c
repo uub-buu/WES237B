@@ -16,7 +16,8 @@
 #define VECTOR_ADD_2_KERNEL_PATH "vector_add_2.cl"
 #define VECTOR_ADD_4_KERNEL_PATH "vector_add_4.cl"
 
-void initializeOpenCL(cl_device_id* device_id, cl_context* context, cl_command_queue* queue) {
+void initializeOpenCL(cl_device_id *device_id, cl_context *context, cl_command_queue *queue)
+{
     cl_int err;
 
     // Find platforms and devices
@@ -34,18 +35,19 @@ void initializeOpenCL(cl_device_id* device_id, cl_context* context, cl_command_q
     CHECK_ERR(err, "clCreateContext");
 
     // Create a command queue
-# if __APPLE__
+#if __APPLE__
     *queue = clCreateCommandQueue(*context, *device_id, 0, &err);
-# else
+#else
     *queue = clCreateCommandQueueWithProperties(*context, *device_id, 0, &err);
-# endif
+#endif
     CHECK_ERR(err, "clCreateCommandQueueWithProperties");
 }
 
-void callVectorAdd2Kernel(Matrix* a, Matrix* b, Matrix* out, cl_context* context, cl_command_queue* queue) {
+void callVectorAdd2Kernel(Matrix *a, Matrix *b, Matrix *out, cl_context *context, cl_command_queue *queue)
+{
     // OpenCL objects
-    cl_program program;       // program
-    cl_kernel kernel;         // kernel
+    cl_program program; // program
+    cl_kernel kernel;   // kernel
 
     // OpenCL setup variables
     size_t global_item_size, local_item_size;
@@ -64,7 +66,7 @@ void callVectorAdd2Kernel(Matrix* a, Matrix* b, Matrix* out, cl_context* context
     // Build the program executable
     err = clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
     CHECK_ERR(err, "clBuildProgram");
-    
+
     kernel = clCreateKernel(program, "vectorAdd", &err);
     CHECK_ERR(err, "clCreateKernel");
 
@@ -77,35 +79,52 @@ void callVectorAdd2Kernel(Matrix* a, Matrix* b, Matrix* out, cl_context* context
         CL_MEM_READ_WRITE,
         buffer_size,
         NULL,
-        &err
-    );
+        &err);
     CHECK_ERR(err, "clCreateBuffer input device 1");
 
     device_input_2 = clCreateBuffer(
-    context,
-    CL_MEM_READ_WRITE,
-    buffer_size,
-    NULL,
-    &err
-    );
+        context,
+        CL_MEM_READ_WRITE,
+        buffer_size,
+        NULL,
+        &err);
     CHECK_ERR(err, "clCreateBuffer input device 2");
 
     device_output = clCreateBuffer(
-    context,
-    CL_MEM_READ_WRITE,
-    buffer_size,
-    NULL,
-    &err
-    );
+        context,
+        CL_MEM_READ_WRITE,
+        buffer_size,
+        NULL,
+        &err);
     CHECK_ERR(err, "clCreateBuffer output device");
 
     //@@ Copy memory to the GPU here
-    err = clEnqueueWriteBuffer(*queue, device_input_1, CL_TRUE, 0, buffer_size, a->data, 0, NULL, NULL);
-    //@@ define local and global work sizes
+    err = clEnqueueWriteBuffer(
+        *queue, device_input_1,
+        CL_TRUE,
+        0,
+        buffer_size,
+        a->data,
+        0,
+        NULL,
+        NULL);
     CHECK_ERR(err, "clEnqueueWriteBuffer input device 1");
 
-    err = clEnqueueWriteBuffer(*queue, device_input_2, CL_TRUE, 0, buffer_size, b->data, 0, NULL, NULL);
+    err |= clEnqueueWriteBuffer(
+        *queue,
+        device_input_2,
+        CL_TRUE,
+        0,
+        buffer_size,
+        b->data,
+        0,
+        NULL,
+        NULL);
     CHECK_ERR(err, "clEnqueueWriteBuffer input device 2");
+
+    //@@ define local and global work sizes
+    global_item_size = size_a;
+    local_item_size = 256; // what is this exactly? I assume for some workers related to grouping the threads? 
 
     // Set the arguments to the kernel
     err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &device_input_1);
@@ -118,22 +137,47 @@ void callVectorAdd2Kernel(Matrix* a, Matrix* b, Matrix* out, cl_context* context
     CHECK_ERR(err, "clSetKernelArg 3");
 
     //@@ Launch the GPU Kernel here
+    err = clEnqueueNDRangeKernel(
+        *queue,
+        kernel,
+        1,
+        NULL,
+        &global_item_size,
+        &local_item_size,
+        0, NULL, NULL);
+    CHECK_ERR(err, "clEnqueueNDRangeKernel");
 
     //@@ Copy the GPU memory back to the CPU here
-
+    err = clEnqueueReadBuffer(
+        *queue, 
+        device_output, 
+        CL_TRUE, 
+        0, 
+        buffer_size, 
+        out->data, 
+        0, 
+        NULL, 
+        NULL);
+    CHECK_ERR(err, "clEnqueueReadBuffer");
     //@@ Free the GPU memory here
-
+    clReleaseMemObject(device_input_1);
+    clReleaseMemObject(device_input_2);
+    clReleaseMemObject(device_output);
+    // idk if this is needed? 
+    // clReleaseKernel(kernel);
+    // clReleaseProgram(program);
     // Release Host Memory
     free(kernel_source);
 }
 
-void part1(Matrix* host_input_1, Matrix* host_input_2, Matrix* host_input_3, Matrix* host_input_4, Matrix* host_output, Matrix* answer, const char* output_file) {
+void part1(Matrix *host_input_1, Matrix *host_input_2, Matrix *host_input_3, Matrix *host_input_4, Matrix *host_output, Matrix *answer, const char *output_file)
+{
     // Start of program one
 
     // OpenCL objects
-    cl_device_id device_id;             // device ID
-    cl_context context;                 // context
-    cl_command_queue queue;             // command queue
+    cl_device_id device_id; // device ID
+    cl_context context;     // context
+    cl_command_queue queue; // command queue
 
     initializeOpenCL(&device_id, &context, &queue);
 
@@ -152,12 +196,16 @@ void part1(Matrix* host_input_1, Matrix* host_input_2, Matrix* host_input_3, Mat
     SaveMatrix(output_file, host_output);
 
     //@@ Release OpenCL objects here
+    clReleaseCommandQueue(queue);
+    clReleaseContext(context);
+    clReleaseDevice(device_id);
 }
 
-void callVectorAdd4Kernel(Matrix* a, Matrix* b, Matrix* c, Matrix* d, Matrix* out, cl_context* context, cl_command_queue* queue) {
+void callVectorAdd4Kernel(Matrix *a, Matrix *b, Matrix *c, Matrix *d, Matrix *out, cl_context *context, cl_command_queue *queue)
+{
     // OpenCL objects
-    cl_program program;                 // program
-    cl_kernel kernel;         // kernel
+    cl_program program; // program
+    cl_kernel kernel;   // kernel
 
     // OpenCL setup variables
     size_t global_item_size, local_item_size;
@@ -176,17 +224,101 @@ void callVectorAdd4Kernel(Matrix* a, Matrix* b, Matrix* c, Matrix* d, Matrix* ou
     // Build the program executable
     err = clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
     CHECK_ERR(err, "clBuildProgram");
-    
+
     kernel = clCreateKernel(program, "vectorAdd", &err);
     CHECK_ERR(err, "clCreateKernel");
 
     // Allocate GPU memory
+    unsigned int size_a = a->shape[0] * a->shape[1]; // @@ replace this with length of the input vector(s)
+    size_t buffer_size = size_a * sizeof(int);
     //@@ Create memory buffers for input and output vectors
+    device_input_1 = clCreateBuffer(
+        context,
+        CL_MEM_READ_WRITE,
+        buffer_size,
+        NULL,
+        &err);
+    CHECK_ERR(err, "clCreateBuffer input device 1");
+
+    device_input_2 = clCreateBuffer(
+        context,
+        CL_MEM_READ_WRITE,
+        buffer_size,
+        NULL,
+        &err);
+    CHECK_ERR(err, "clCreateBuffer input device 2");
+    device_input_3 = clCreateBuffer(
+        context,
+        CL_MEM_READ_WRITE,
+        buffer_size,
+        NULL,
+        &err);
+    CHECK_ERR(err, "clCreateBuffer input device 3");
+
+    device_input_4 = clCreateBuffer(
+        context,
+        CL_MEM_READ_WRITE,
+        buffer_size,
+        NULL,
+        &err);
+    CHECK_ERR(err, "clCreateBuffer input device 4");
+
+    device_output = clCreateBuffer(
+        context,
+        CL_MEM_READ_WRITE,
+        buffer_size,
+        NULL,
+        &err);
+    CHECK_ERR(err, "clCreateBuffer output device");
     //@@ Copy memory to the GPU here
+    err = clEnqueueWriteBuffer(
+        *queue, device_input_1,
+        CL_TRUE,
+        0,
+        buffer_size,
+        a->data,
+        0,
+        NULL,
+        NULL);
+    CHECK_ERR(err, "clEnqueueWriteBuffer input device 1");
 
+    err |= clEnqueueWriteBuffer(
+        *queue,
+        device_input_2,
+        CL_TRUE,
+        0,
+        buffer_size,
+        b->data,
+        0,
+        NULL,
+        NULL);
+    CHECK_ERR(err, "clEnqueueWriteBuffer input device 2");
+
+    err = clEnqueueWriteBuffer(
+        *queue, device_input_3,
+        CL_TRUE,
+        0,
+        buffer_size,
+        a->data,
+        0,
+        NULL,
+        NULL);
+    CHECK_ERR(err, "clEnqueueWriteBuffer input device 3");
+
+    err |= clEnqueueWriteBuffer(
+        *queue,
+        device_input_4,
+        CL_TRUE,
+        0,
+        buffer_size,
+        b->data,
+        0,
+        NULL,
+        NULL);
+    CHECK_ERR(err, "clEnqueueWriteBuffer input device 4");
     //@@ define local and global work sizes
-    unsigned int size_a = 0; // @@ replace this with length of the input vector(s)
-
+    global_item_size = size_a;
+    local_item_size = 256; // again is this necessary?
     // Set the arguments to the kernel
     err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &device_input_1);
     CHECK_ERR(err, "clSetKernelArg 0");
@@ -202,22 +334,52 @@ void callVectorAdd4Kernel(Matrix* a, Matrix* b, Matrix* c, Matrix* d, Matrix* ou
     CHECK_ERR(err, "clSetKernelArg 5");
 
     //@@ Launch the GPU Kernel here
+    err = clEnqueueNDRangeKernel(
+        *queue,
+        kernel,
+        1,
+        NULL,
+        &global_item_size,
+        &local_item_size,
+        0, NULL, NULL);
+    CHECK_ERR(err, "clEnqueueNDRangeKernel");
 
     //@@ Copy the GPU memory back to the CPU here
+    err = clEnqueueReadBuffer(
+        *queue, 
+        device_output, 
+        CL_TRUE, 
+        0, 
+        buffer_size, 
+        out->data, 
+        0, 
+        NULL, 
+        NULL);
+    CHECK_ERR(err, "clEnqueueReadBuffer");
 
     //@@ Free the GPU memory here
+    clReleaseMemObject(device_input_1);
+    clReleaseMemObject(device_input_2);
+    clReleaseMemObject(device_input_3);
+    clReleaseMemObject(device_input_4);
+    clReleaseMemObject(device_output);
+
+    // idk if this is needed? 
+    // clReleaseKernel(kernel);
+    // clReleaseProgram(program);
 
     // Release Host Memory
     free(kernel_source);
 }
 
-void part2(Matrix* host_input_1, Matrix* host_input_2, Matrix* host_input_3, Matrix* host_input_4, Matrix* host_output, Matrix* answer, const char* output_file) {
+void part2(Matrix *host_input_1, Matrix *host_input_2, Matrix *host_input_3, Matrix *host_input_4, Matrix *host_output, Matrix *answer, const char *output_file)
+{
     // Start of program two
 
     // OpenCL objects
-    cl_device_id device_id;             // device ID
-    cl_context context;                 // context
-    cl_command_queue queue;             // command queue
+    cl_device_id device_id; // device ID
+    cl_context context;     // context
+    cl_command_queue queue; // command queue
 
     initializeOpenCL(&device_id, &context, &queue);
 
@@ -234,6 +396,9 @@ void part2(Matrix* host_input_1, Matrix* host_input_2, Matrix* host_input_3, Mat
     SaveMatrix(output_file, host_output);
 
     //@@ Release OpenCL objects here
+    clReleaseCommandQueue(queue);
+    clReleaseContext(context);
+    clReleaseDevice(device_id);
 }
 
 int main(int argc, char *argv[])
@@ -279,17 +444,14 @@ int main(int argc, char *argv[])
     clock_t start, end;
     double cpu_time_used;
 
-
-    
-
     // =================================================================
     printf("==============Starting Program 1==============\n");
     start = clock();
 
     part1(&host_input_1, &host_input_2, &host_input_3, &host_input_4, &host_output, &answer, program_1_output_file);
-    
+
     end = clock();
-    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC * 1000; // Convert to milliseconds
+    cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC * 1000; // Convert to milliseconds
 
     printf("Execution time: %.2fms\n", cpu_time_used);
     printf("==============Finished Program 1==============\n");
@@ -303,15 +465,11 @@ int main(int argc, char *argv[])
     start = clock();
 
     part2(&host_input_1, &host_input_2, &host_input_3, &host_input_4, &host_output, &answer, program_2_output_file);
-    
+
     end = clock();
-    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC * 1000; // Convert to milliseconds
+    cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC * 1000; // Convert to milliseconds
     printf("Execution time: %.2fms\n", cpu_time_used);
     printf("==============Finished Program 2==============\n");
-
-
-
-
 
     // Release host memory
     free(host_input_1.data);
