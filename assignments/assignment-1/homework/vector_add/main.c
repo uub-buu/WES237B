@@ -44,7 +44,7 @@ void initializeOpenCL(cl_device_id* device_id, cl_context* context, cl_command_q
 
 void callVectorAdd2Kernel(Matrix* a, Matrix* b, Matrix* out, cl_context* context, cl_command_queue* queue) {
     // OpenCL objects
-    cl_program program;                 // program
+    cl_program program;       // program
     cl_kernel kernel;         // kernel
 
     // OpenCL setup variables
@@ -69,12 +69,43 @@ void callVectorAdd2Kernel(Matrix* a, Matrix* b, Matrix* out, cl_context* context
     CHECK_ERR(err, "clCreateKernel");
 
     // Allocate GPU memory
+    unsigned int size_a = a->shape[0] * a->shape[1]; // @@ replace this with length of the input vector(s)
+    size_t buffer_size = size_a * sizeof(int);
     //@@ Create memory buffers for input and output vectors
+    device_input_1 = clCreateBuffer(
+        context,
+        CL_MEM_READ_WRITE,
+        buffer_size,
+        NULL,
+        &err
+    );
+    CHECK_ERR(err, "clCreateBuffer input device 1");
+
+    device_input_2 = clCreateBuffer(
+    context,
+    CL_MEM_READ_WRITE,
+    buffer_size,
+    NULL,
+    &err
+    );
+    CHECK_ERR(err, "clCreateBuffer input device 2");
+
+    device_output = clCreateBuffer(
+    context,
+    CL_MEM_READ_WRITE,
+    buffer_size,
+    NULL,
+    &err
+    );
+    CHECK_ERR(err, "clCreateBuffer output device");
 
     //@@ Copy memory to the GPU here
-
+    err = clEnqueueWriteBuffer(*queue, device_input_1, CL_TRUE, 0, buffer_size, a->data, 0, NULL, NULL);
     //@@ define local and global work sizes
-    unsigned int size_a = 0; // @@ replace this with length of the input vector(s)
+    CHECK_ERR(err, "clEnqueueWriteBuffer input device 1");
+
+    err = clEnqueueWriteBuffer(*queue, device_input_2, CL_TRUE, 0, buffer_size, b->data, 0, NULL, NULL);
+    CHECK_ERR(err, "clEnqueueWriteBuffer input device 2");
 
     // Set the arguments to the kernel
     err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &device_input_1);
@@ -151,7 +182,6 @@ void callVectorAdd4Kernel(Matrix* a, Matrix* b, Matrix* c, Matrix* d, Matrix* ou
 
     // Allocate GPU memory
     //@@ Create memory buffers for input and output vectors
-
     //@@ Copy memory to the GPU here
 
     //@@ define local and global work sizes
