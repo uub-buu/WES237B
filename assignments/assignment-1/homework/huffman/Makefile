@@ -1,5 +1,5 @@
 CXX?=g++
-CXXFLAGS=-Og -g
+CXXFLAGS=-O0 -g
 
 EXEC=huffman
 

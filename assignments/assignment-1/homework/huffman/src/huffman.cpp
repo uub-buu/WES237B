@@ -86,8 +86,8 @@ void generateCodebook(huffnode *node, bitcode code)
     if (node->data.ascii != '\0')
     {
         codebook.insert({node->data.ascii, code});
-        std::cout << node->data.ascii << ": ";
-        std::cout << std::bitset<4>(code.bits) << " bitcount=" << (int)code.bitCount << std::endl;
+        //std::cout << node->data.ascii << ": ";
+        //std::cout << std::bitset<16>(code.bits) << " bitcount=" << (int)code.bitCount << std::endl;
     }
     if (node->leftNode != nullptr)
     {
@@ -117,16 +117,12 @@ huffnode *huffmanTree(asciiKey table[], int size)
     {
         // pop the lowest two node
         left = new huffnode(treeHeap.top());
-        std::cout << left->data.ascii << ":" << left->data.count << std::endl;
         treeHeap.pop();
         right = new huffnode(treeHeap.top());
-        std::cout << right->data.ascii << ":" << right->data.count << std::endl;
-
         treeHeap.pop();
 
         asciiKey parentData = {'\0', left->data.count + right->data.count};
         huffnode parent{parentData, left, right};
-        std::cout << parent.data.ascii << ":" << parent.data.count << std::endl;
 
         treeHeap.push(parent);
     }
@@ -151,9 +147,6 @@ int huffman_encode(const unsigned char *bufin,
     for (unsigned int i = 0; i < bufinlen; i++)
     {
         unsigned int index = static_cast<unsigned int>(bufin[i]);
-        if (bufin[i] != '\0')
-        {
-        }
         asciiTable[index].ascii = bufin[i];
         if (asciiTable[index].count == 0)
         {
@@ -195,34 +188,30 @@ int huffman_encode(const unsigned char *bufin,
     {
         uint8_t bitcode = codebook[bufin[i]].bits;
         int bitCount = codebook[bufin[i]].bitCount;
-
         uint8_t extractedBit = 0;
         for (int bits = bitCount - 1; bits >= 0; --bits)
         {
             // add bit to our psuedo buffer
             extractedBit = (bitcode >> bits) & 1;
-            currentByte = (currentByte << 1) | extractedBit;
+            uint8_t updatedByte = (currentByte << 1) | extractedBit;
+            currentByte = updatedByte;
+
             bitsfilled++;
             if (bitsfilled == 8)
             {
-                (*pbufout)[byteIndex++] = currentByte;
-
+                (*pbufout)[byteIndex] = currentByte;
+                byteIndex++;
                 currentByte = 0;
                 bitsfilled = 0;
             }
         }
-
-        if (bitsfilled > 0)
-        {
-            currentByte = currentByte << (8 - bitsfilled);
-            (*pbufout)[byteIndex] = currentByte; // byteIndex should be at the very end
-        }
     }
-    // for (int i = 0; i < outputBytes; i++)
-    // {
+    if (bitsfilled > 0)
+    {
+        currentByte = currentByte << (8 - bitsfilled);
+        (*pbufout)[*pbufoutlen - 1] = currentByte; // byteIndex should be at the very end
+    }
 
-    //     std::cout << "compressed bits is: " << std::bitset<8>((*pbufout)[i])<< std::endl;
-    // }
     return 0;
 }
 // maybe we return true?
@@ -232,7 +221,6 @@ bool decode(huffnode *parent, huffnode *child, uint8_t bit)
     //  if node bit matches then what? need to return it I guess.
     //  temp bit buffer
     huffnode *ptr = child;
-    bool x;
     uint8_t trackedBit = 2;
     // setting to some arbitrary value
     // prevent matching before node position is determined
@@ -275,17 +263,19 @@ int huffman_decode(const unsigned char *bufin,
     *pbufout = new unsigned char[*pbufoutlen]();
     unsigned int originalIndex = 0;
     // going through our coded file 1 byte at a time
+    int bitShift;
     for (int i = 0; i < bufinlen; i++)
     {
-        uint8_t bitShift = 7;
+        bitShift = 7;
         uint8_t extracted = 0;
         currentByte = bufin[i]; // get the first byte in the coded file
         while (bitShift >= 0)
         {
             if (ptr->data.ascii != '\0')
             {
-                (*pbufout)[originalIndex] = ptr->data.ascii;
-                originalIndex++;
+
+                (*pbufout)[originalIndex++] = ptr->data.ascii;
+                //std::cout << "byte " << originalIndex << ": " << (*pbufout)[originalIndex++] << std::endl;
                 ptr = root;
             }
             else
@@ -300,8 +290,15 @@ int huffman_decode(const unsigned char *bufin,
                 {
                     ptr = ptr->rightNode;
                 }
+                if (originalIndex == (*pbufoutlen) - 1 && ptr->data.ascii != '\0')
+                {
+
+                    (*pbufout)[originalIndex] = ptr->data.ascii;
+                    ptr = root;
+                }
             }
         }
     }
+
     return 0;
 }
