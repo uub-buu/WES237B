@@ -449,14 +449,14 @@ int main(int argc, char *argv[])
 
     // =================================================================
     printf("==============Starting Program 1==============\n");
-    // start = clock();
+    start = clock();
 
-    // part1(&host_input_1, &host_input_2, &host_input_3, &host_input_4, &host_output, &answer, program_1_output_file);
+    part1(&host_input_1, &host_input_2, &host_input_3, &host_input_4, &host_output, &answer, program_1_output_file);
 
-    // end = clock();
-    // cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC * 1000; // Convert to milliseconds
+    end = clock();
+    cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC * 1000; // Convert to milliseconds
 
-    // printf("Execution time: %.2fms\n", cpu_time_used);
+    printf("Execution time: %.2fms\n", cpu_time_used);
     printf("==============Finished Program 1==============\n");
 
     // Cleanup and prepare for second program.
