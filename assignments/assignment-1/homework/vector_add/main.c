@@ -124,7 +124,7 @@ void callVectorAdd2Kernel(Matrix *a, Matrix *b, Matrix *out, cl_context *context
 
     //@@ define local and global work sizes
     global_item_size = size_a;
-    local_item_size = 256; // what is this exactly? I assume for some workers related to grouping the threads? 
+    local_item_size = 1; // what is this exactly? I assume for some workers related to grouping the threads? 
 
     // Set the arguments to the kernel
     err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &device_input_1);
@@ -321,7 +321,7 @@ void callVectorAdd4Kernel(Matrix *a, Matrix *b, Matrix *c, Matrix *d, Matrix *ou
     CHECK_ERR(err, "clEnqueueWriteBuffer input device 4");
     //@@ define local and global work sizes
     global_item_size = size_a;
-    local_item_size = 256; // again is this necessary?
+    local_item_size = 1; // again is this necessary?
     // Set the arguments to the kernel
     err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &device_input_1);
     CHECK_ERR(err, "clSetKernelArg 0");
