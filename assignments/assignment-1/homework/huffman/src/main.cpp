@@ -5,7 +5,8 @@
 #include <fstream>
 
 using namespace std;
-
+/* --------------------------------------------------------------------------------*/
+/*The following code was intended for initial testing*/
 // int main(int argc, const char *argv[])
 // {
 // 	const char *test_string = "AABACDCDDDDEEEEEF";
@@ -31,6 +32,7 @@ using namespace std;
 // 	std::cout <<std::endl;
 // 	return 0;
 // }
+/* --------------------------------------------------------------------------------*/
 
 int main(int argc, const char *argv[])
 {

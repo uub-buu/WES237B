@@ -9,12 +9,12 @@
 #include <queue>
 #include <unordered_map>
 #include <bitset>
-// COMPLETE
-// Counting Sort for Radix
+
+
 
 std::unordered_map<unsigned char, bitcode> codebook;
 huffnode *root;
-unsigned int fileSize;
+int fileSize;
 bitcode getCode(unsigned char ascii)
 {
     return codebook[ascii];
@@ -81,9 +81,8 @@ void radixSort(asciiKey arry[], unsigned int size)
 
 void generateCodebook(huffnode *node, bitcode code)
 {
-    // temp bit buffer
-    uint8_t bits;
-    if (node->data.ascii != '\0')
+    uint16_t bits;
+    if (node->leftNode == nullptr && node->rightNode == nullptr)
     {
         codebook.insert({node->data.ascii, code});
         //std::cout << node->data.ascii << ": ";
@@ -112,19 +111,22 @@ huffnode *huffmanTree(asciiKey table[], int size)
     {
         treeHeap.push(huffnode{table[i], nullptr, nullptr});
     }
-
     while (treeHeap.size() > 1)
     {
         // pop the lowest two node
         left = new huffnode(treeHeap.top());
+        //std::cout << (unsigned char)left->data.ascii << ":" << left->data.count << std::endl;
         treeHeap.pop();
         right = new huffnode(treeHeap.top());
+        //std::cout << (unsigned char)right->data.ascii << ":" << right->data.count << std::endl;
+
         treeHeap.pop();
 
-        asciiKey parentData = {'\0', left->data.count + right->data.count};
+        asciiKey parentData = {0, left->data.count + right->data.count};
         huffnode parent{parentData, left, right};
 
         treeHeap.push(parent);
+        //std::cout << (unsigned char)parent.data.ascii << ":" << parent.data.count << std::endl;
     }
 
     huffnode *root = new huffnode(treeHeap.top());
@@ -147,9 +149,10 @@ int huffman_encode(const unsigned char *bufin,
     for (unsigned int i = 0; i < bufinlen; i++)
     {
         unsigned int index = static_cast<unsigned int>(bufin[i]);
-        asciiTable[index].ascii = bufin[i];
+        asciiTable[index].ascii = index;
         if (asciiTable[index].count == 0)
         {
+            //std::cout << "character : " << asciiTable[index].ascii << ": decimal " << static_cast<unsigned int>(asciiTable[index].ascii) << std::endl;
             frequencySize++;
         }
         asciiTable[index].count++;
@@ -184,9 +187,9 @@ int huffman_encode(const unsigned char *bufin,
     int bitsfilled = 0;
     uint8_t currentByte = 0;
     // need to go through each character in the file.
-    for (int i = 0, byteIndex = 0; i < bufinlen; i++)
+    for (unsigned long i = 0, byteIndex = 0; i < bufinlen; i++)
     {
-        uint8_t bitcode = codebook[bufin[i]].bits;
+        uint16_t bitcode = codebook[bufin[i]].bits;
         int bitCount = codebook[bufin[i]].bitCount;
         uint8_t extractedBit = 0;
         for (int bits = bitCount - 1; bits >= 0; --bits)
@@ -197,7 +200,7 @@ int huffman_encode(const unsigned char *bufin,
             currentByte = updatedByte;
 
             bitsfilled++;
-            if (bitsfilled == 8)
+            if (bitsfilled == 8)    
             {
                 (*pbufout)[byteIndex] = currentByte;
                 byteIndex++;
@@ -208,6 +211,7 @@ int huffman_encode(const unsigned char *bufin,
     }
     if (bitsfilled > 0)
     {
+        //std::cout << "how many bits are left:" << bitsfilled<<std::endl;
         currentByte = currentByte << (8 - bitsfilled);
         (*pbufout)[*pbufoutlen - 1] = currentByte; // byteIndex should be at the very end
     }
@@ -217,9 +221,6 @@ int huffman_encode(const unsigned char *bufin,
 // maybe we return true?
 bool decode(huffnode *parent, huffnode *child, uint8_t bit)
 {
-    // check left and right node until leaf node is encountered(points to nullptr)
-    //  if node bit matches then what? need to return it I guess.
-    //  temp bit buffer
     huffnode *ptr = child;
     uint8_t trackedBit = 2;
     // setting to some arbitrary value
@@ -271,11 +272,11 @@ int huffman_decode(const unsigned char *bufin,
         currentByte = bufin[i]; // get the first byte in the coded file
         while (bitShift >= 0)
         {
-            if (ptr->data.ascii != '\0')
+            if (ptr->leftNode == nullptr && ptr->rightNode == nullptr)
             {
 
-                (*pbufout)[originalIndex++] = ptr->data.ascii;
-                //std::cout << "byte " << originalIndex << ": " << (*pbufout)[originalIndex++] << std::endl;
+                (*pbufout)[originalIndex++] = static_cast<unsigned char>(ptr->data.ascii);
+                // //std::cout << "byte " << originalIndex << ": " << (*pbufout)[originalIndex++] << std::endl;
                 ptr = root;
             }
             else
@@ -290,10 +291,10 @@ int huffman_decode(const unsigned char *bufin,
                 {
                     ptr = ptr->rightNode;
                 }
-                if (originalIndex == (*pbufoutlen) - 1 && ptr->data.ascii != '\0')
+                if (originalIndex == (*pbufoutlen) - 1 && (ptr->leftNode == nullptr && ptr->rightNode == nullptr))
                 {
 
-                    (*pbufout)[originalIndex] = ptr->data.ascii;
+                    (*pbufout)[originalIndex] = static_cast<unsigned char>(ptr->data.ascii);
                     ptr = root;
                 }
             }

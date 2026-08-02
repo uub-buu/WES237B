@@ -5,29 +5,37 @@
 #include <stdio.h>
 #include <stdint.h>
 
-typedef struct {
-    unsigned char ascii;
-    int count = 0;
+typedef struct
+{
+	unsigned int ascii = 0;
+	int count = 0;
 } asciiKey;
-struct bitcode{
-    uint8_t bits;
-    int bitCount = 0;
-};
-struct huffnode{
-	asciiKey data;
-	huffnode* leftNode;
-	huffnode* rightNode;
 
-	bool operator<(const huffnode& other) const {
-        return data.count > other.data.count;
-    }
+struct huffnode
+{
+	asciiKey data;
+	huffnode *leftNode;
+	huffnode *rightNode;
+
+	bool operator<(const huffnode &other) const
+	{
+		bool t = data.count > other.data.count;
+		return t;
+	}
 };
+
+struct bitcode
+{
+	uint16_t bits;
+	int bitCount = 0;
+};
+
 bitcode getCode(unsigned char ascii);
 void countingSort(asciiKey arry[], int size, int exp);
 int getMax(const asciiKey arry[], int size);
 void radixSort(asciiKey arry[], unsigned int size);
-void generateCodebook(huffnode* node, bitcode code);
-huffnode* huffmanTree(asciiKey table[], int size);
+void generateCodebook(huffnode *node, bitcode code);
+huffnode *huffmanTree(asciiKey table[], int size);
 /**
  * @param bufin       Array of characters to encode
  * @param bufinlen    Number of characters in the array
@@ -37,10 +45,9 @@ huffnode* huffmanTree(asciiKey table[], int size);
  * @return error code (0 is no error)
  **/
 int huffman_encode(const unsigned char *bufin,
-		   uint32_t bufinlen,
-		   unsigned char **pbufout,
-		   uint32_t *pbufoutlen);
-
+				   uint32_t bufinlen,
+				   unsigned char **pbufout,
+				   uint32_t *pbufoutlen);
 
 /**
  * @param bufin       Array of characters to decode
@@ -51,8 +58,8 @@ int huffman_encode(const unsigned char *bufin,
  * @return error code (0 is no error)
  **/
 int huffman_decode(const unsigned char *bufin,
-  		   uint32_t bufinlen,
-		   unsigned char **bufout,
-		   uint32_t *pbufoutlen);
+				   uint32_t bufinlen,
+				   unsigned char **bufout,
+				   uint32_t *pbufoutlen);
 
 #endif
