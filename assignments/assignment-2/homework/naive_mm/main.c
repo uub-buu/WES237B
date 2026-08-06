@@ -14,9 +14,9 @@
 void NaiveMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
 {
     //answer for matrix result is stored in data array. 
-    //starting from first row first column -> first row, last column -> second row, first column. until we get to last row last column
     //@@ Insert code to implement naive matrix multiply here
-    // shape[0] will give use rows
+    // shape[0] will give us rows
+    // shape[1] will give us columns
     for(int i = 0; i < input0->shape[0]; i++){
         for(int j = 0; j < input1->shape[1]; j++){
             int index_r = (i * input1->shape[1]) + j;
