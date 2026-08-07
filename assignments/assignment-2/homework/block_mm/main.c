@@ -11,43 +11,43 @@
         exit(EXIT_FAILURE);                           \
     }
 
-
-void BlockMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
+void blockMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
 {
     // answer for matrix result is stored in data array.
     // starting from first row first column -> first row, last column -> second row, first column. until we get to last row last column
     //@@ Insert code to implement naive matrix multiply here
-    //  shape[0] will give use rows
-    int block = 64; // calculated using the following: <totalMatrices> x (block x block) x <sizeof(int)> = RB3 L1 cache size
-    for (int i = 0; i < input0->shape[0]; i += block)
+    int block_size = 64; // calculated using the following: <totalMatrices> x (block_size x block_size) x <sizeof(int)> = RB3 L1 cache size
+    int input0_height = input0->shape[0];
+    int input0_width = input0->shape[1];
+    int input1_height = input1->shape[0];
+    int input1_width = input1->shape[1];
+    for (int b_i = 0; b_i < input0_height; b_i += block_size)
     {
-        for (int j = 0; j < input1->shape[1]; j += block)
+        for (int b_j = 0; b_j < input1_width; b_j += block_size)
         {
-            int index_r = (i * input1->shape[1]) + j;
-            result->data[index_r] = 0;
-            for (int k = 0; k < input0->shape[1]; k++)
+            for (int b_k = 0; b_k < input0_width; b_k += block_size)
             {
-
                 /* THIS IS THE NAIVE MATRIX MULTIPLY APPROACH*/
-                for (int ii = 0; ii < i+block; ii++)
+                for (int ii = b_i; ii < ((b_i + block_size < input0_height) ? (b_i + block_size) : input0_height); ii++)
                 {
-                    for (int jj = 0; jj < j+block; jj++)
+                    for (int jj = b_j; jj < ((b_j + block_size < input1_width) ? (b_j + block_size) : input1_width); jj++)
                     {
-                        int index_r = (ii * input1->shape[1]) + jj;
-                        result->data[index_r] = 0;
-                        for (int kk = 0; kk < k+block; kk++)
+                        int temp = 0;
+                        for (int kk = b_k; kk < ((b_k + block_size < input0_width) ? (b_k + block_size) : input0_width); kk++)
                         {
+
                             int index_0 = (ii * input0->shape[1]) + kk;
                             int index_1 = (kk * input1->shape[1]) + jj;
-                            result->data[index_r] += input0->data[index_0] * input1->data[index_1];
+                            temp += input0->data[index_0] * input1->data[index_1];
                         }
+                        int index_r = (ii * input1->shape[1]) + jj;
+                        result->data[index_r] += temp;
                     }
                 }
             }
         }
     }
 }
-
 
 int main(int argc, char *argv[])
 {
@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
 
     // Host input and output vectors and sizes
     Matrix host_a, host_b, host_c, answer;
-    
+
     cl_int err;
 
     err = LoadMatrix(input_file_a, &host_a);
@@ -87,10 +87,10 @@ int main(int argc, char *argv[])
     host_c.data = (int *)malloc(sizeof(int) * host_c.shape[0] * host_c.shape[1]);
 
     // Call your matrix multiply.
-    BlockMatrixMultiply(&host_a, &host_b, &host_c);
+    blockMatrixMultiply(&host_a, &host_b, &host_c);
 
     // // Call to print the matrix
-    //PrintMatrix(&host_c);
+    // PrintMatrix(&host_c);
 
     // Save the matrix
     SaveMatrix(input_file_d, &host_c);
@@ -107,4 +107,3 @@ int main(int argc, char *argv[])
 
     return 0;
 }
-
