@@ -11,24 +11,43 @@
         exit(EXIT_FAILURE);                           \
     }
 
+
 void BlockMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
 {
-    //answer for matrix result is stored in data array. 
-    //starting from first row first column -> first row, last column -> second row, first column. until we get to last row last column
-    //@@ Insert code to implement block matrix multiply here
-    // shape[0] will give use rows
-    for(int i = 0; i < input0->shape[0]; i++){
-        for(int j = 0; j < input1->shape[1]; j++){
+    // answer for matrix result is stored in data array.
+    // starting from first row first column -> first row, last column -> second row, first column. until we get to last row last column
+    //@@ Insert code to implement naive matrix multiply here
+    //  shape[0] will give use rows
+    int block = 64; // calculated using the following: <totalMatrices> x (block x block) x <sizeof(int)> = RB3 L1 cache size
+    for (int i = 0; i < input0->shape[0]; i += block)
+    {
+        for (int j = 0; j < input1->shape[1]; j += block)
+        {
             int index_r = (i * input1->shape[1]) + j;
             result->data[index_r] = 0;
-            for(int k = 0; k < input0->shape[1];k++){
-                    int index_0 = (i*input0->shape[1]) + k;
-                    int index_1 = (k*input1->shape[1]) + j;
-                    result->data[index_r] += input0->data[index_0]*input1->data[index_1];
+            for (int k = 0; k < input0->shape[1]; k++)
+            {
+
+                /* THIS IS THE NAIVE MATRIX MULTIPLY APPROACH*/
+                for (int ii = 0; ii < i+block; ii++)
+                {
+                    for (int jj = 0; jj < j+block; jj++)
+                    {
+                        int index_r = (ii * input1->shape[1]) + jj;
+                        result->data[index_r] = 0;
+                        for (int kk = 0; kk < k+block; kk++)
+                        {
+                            int index_0 = (ii * input0->shape[1]) + kk;
+                            int index_1 = (kk * input1->shape[1]) + jj;
+                            result->data[index_r] += input0->data[index_0] * input1->data[index_1];
+                        }
+                    }
+                }
             }
         }
     }
 }
+
 
 int main(int argc, char *argv[])
 {
