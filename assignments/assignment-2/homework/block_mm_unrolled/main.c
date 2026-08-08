@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "matrix.h"
 
 #define CHECK_ERR(err, msg)                           \
@@ -46,7 +47,7 @@ void blockUnrolledMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
         NaiveMatrixMultiply(input0, input1, result);
         return;
     }
-
+    
     for (int b_i = 0; b_i < input0_height; b_i += block_size)
     {
         for (int b_j = 0; b_j < input1_width; b_j += block_size)
@@ -54,25 +55,21 @@ void blockUnrolledMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
             for (int b_k = 0; b_k < input0_width; b_k += block_size)
             {
                 /* THIS IS THE NAIVE MATRIX MULTIPLY APPROACH*/
-                for (int ii = b_i; ii < ((b_i + block_size < input0_height) ? (b_i + block_size) : input0_height); ii++)
+                for (int i = b_i; i < ((b_i + block_size < input0_height) ? (b_i + block_size) : input0_height); i++)
                 {
-                    for (int jj = b_j; jj <= ((b_j + block_size < input1_width) ? (b_j + block_size) : input1_width) - UNROLLED_SIZE; jj += UNROLLED_SIZE)
+                    int j;
+                    for (j = b_j; j <= ((b_j + block_size < input1_width) ? (b_j + block_size) : input1_width) - UNROLLED_SIZE; j += UNROLLED_SIZE)
                     {
-                        int index_r = (ii * input1_width) + jj;
-                        result->data[index_r] = 0;
-                        result->data[index_r+1] = 0;
-                        result->data[index_r+2] = 0;
-                        result->data[index_r+3] = 0;
-                        int temp0 = 0;
-                        int temp1 = 0;
-                        int temp2 = 0;
-                        int temp3 = 0;
+                        int index_r = (i * input1_width) + j;
+                        int temp0 = result->data[index_r];
+                        int temp1 = result->data[index_r+1];
+                        int temp2 = result->data[index_r+2];
+                        int temp3 = result->data[index_r+3];
 
-                        for (int kk = b_k; kk < ((b_k + block_size < input0_width) ? (b_k + block_size) : input0_width); kk++)
+                        for (int k = b_k; k < ((b_k + block_size < input0_width) ? (b_k + block_size) : input0_width); k++)
                         {
-                            // need to remove initializing the index so I can properly unroll the loop
-                            int index_0 = (ii * input0_width) + kk;
-                            int index_1 = (kk * input1_width) + jj;
+                            int index_0 = (i * input0_width) + k;
+                            int index_1 = (k * input1_width) + j;
                             temp0 += input0->data[index_0] * input1->data[index_1];
                             temp1 += input0->data[index_0] * input1->data[index_1+1];
                             temp2 += input0->data[index_0] * input1->data[index_1+2];
@@ -82,10 +79,19 @@ void blockUnrolledMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
                         result->data[index_r+1] = temp1;
                         result->data[index_r+2] = temp2;
                         result->data[index_r+3] = temp3;
-                        printf("%d\n", index_r);
-                        printf("%d\n", index_r+1);
-                        printf("%d\n", index_r+2);
-                        printf("%d\n",index_r+3);
+                    }
+                    for (; j < ((b_j + block_size < input1_width) ? (b_j + block_size) : input1_width); j++) 
+                    {
+                        int index_r = (i * input1_width) + j;
+                        int temp = result->data[index_r];
+
+                        for (int k = b_k; k < ((b_k + block_size < input0_width) ? (b_k + block_size) : input0_width); k++)
+                        {
+                            int index_0 = (i * input0_width) + k;
+                            int index_1 = (k * input1_width) + j;
+                            temp += input0->data[index_0] * input1->data[index_1];
+                        }
+                        result->data[index_r] = temp;
                     }
                 }
             }
@@ -129,7 +135,12 @@ int main(int argc, char *argv[])
     host_c.shape[0] = rows;
     host_c.shape[1] = cols;
     host_c.data = (int *)malloc(sizeof(int) * host_c.shape[0] * host_c.shape[1]);
-
+    // printf("A: %dx%d, B: %dx%d, C: %dx%d\n", 
+    //    host_a.shape[0], host_a.shape[1], 
+    //    host_b.shape[0], host_b.shape[1], 
+    //    host_c.shape[0], host_c.shape[1]);
+    // lets initialize this to 0's so I do not run into garbage data issues;
+    memset(host_c.data , 0, sizeof(int) * host_c.shape[0] * host_c.shape[1]); 
     // Call your matrix multiply.
     blockUnrolledMatrixMultiply(&host_a, &host_b, &host_c);
 

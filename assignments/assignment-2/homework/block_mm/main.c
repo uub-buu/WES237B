@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "matrix.h"
 
 #define CHECK_ERR(err, msg)                           \
@@ -28,19 +29,19 @@ void blockMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
             for (int b_k = 0; b_k < input0_width; b_k += block_size)
             {
                 /* THIS IS THE NAIVE MATRIX MULTIPLY APPROACH*/
-                for (int ii = b_i; ii < ((b_i + block_size < input0_height) ? (b_i + block_size) : input0_height); ii++)
+                for (int i = b_i; i < ((b_i + block_size < input0_height) ? (b_i + block_size) : input0_height); i++)
                 {
-                    for (int jj = b_j; jj < ((b_j + block_size < input1_width) ? (b_j + block_size) : input1_width); jj++)
+                    for (int j = b_j; j < ((b_j + block_size < input1_width) ? (b_j + block_size) : input1_width); j++)
                     {
                         int temp = 0;
-                        for (int kk = b_k; kk < ((b_k + block_size < input0_width) ? (b_k + block_size) : input0_width); kk++)
+                        for (int k = b_k; k < ((b_k + block_size < input0_width) ? (b_k + block_size) : input0_width); k++)
                         {
 
-                            int index_0 = (ii * input0->shape[1]) + kk;
-                            int index_1 = (kk * input1->shape[1]) + jj;
+                            int index_0 = (i * input0->shape[1]) + k;
+                            int index_1 = (k * input1->shape[1]) + j;
                             temp += input0->data[index_0] * input1->data[index_1];
                         }
-                        int index_r = (ii * input1->shape[1]) + jj;
+                        int index_r = (i * input1->shape[1]) + j;
                         result->data[index_r] += temp;
                     }
                 }
@@ -85,6 +86,7 @@ int main(int argc, char *argv[])
     host_c.shape[0] = rows;
     host_c.shape[1] = cols;
     host_c.data = (int *)malloc(sizeof(int) * host_c.shape[0] * host_c.shape[1]);
+    memset(host_c.data , 0, sizeof(int) * host_c.shape[0] * host_c.shape[1]); 
 
     // Call your matrix multiply.
     blockMatrixMultiply(&host_a, &host_b, &host_c);
