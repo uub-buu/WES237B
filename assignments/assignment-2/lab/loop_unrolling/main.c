@@ -54,8 +54,6 @@ int main(int argc, char *argv[])
         sum += host_a.data[i + 2];
         sum += host_a.data[i + 3];
     }
-    printf("%d\n", total);
-    printf("%d\n", i);
 
     for (; i < total; i++)
     {
