@@ -45,23 +45,22 @@ int main(int argc, char *argv[])
     //@@ Modify the below code in the remaining demos
     int sum = 0;
     int total = rows * cols;
-    for (int i = 0; i < total; i += 4)
+    int i;
+    for (i = 0; i <= total - 4; i += 4)
     {
-        int diff = total - i;
+
         sum += host_a.data[i];
         sum += host_a.data[i + 1];
         sum += host_a.data[i + 2];
         sum += host_a.data[i + 3];
-
-        if (diff < 4 && diff > 0)
-        {
-            for (int j = 0; j < diff; j++)
-            {
-                sum += host_a.data[j];
-            }
-        }
     }
+    printf("%d\n", total);
+    printf("%d\n", i);
 
+    for (; i < total; i++)
+    {
+        sum += host_a.data[i];
+    }
     printf("sum: %d == %d\n", sum, host_b.data[0]);
 
     output.data[0] = sum;
