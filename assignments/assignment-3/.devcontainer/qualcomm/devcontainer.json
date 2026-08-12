@@ -1,0 +1,15 @@
+{
+	"image": "ghcr.io/kastnerrg/cse160-opencl:qcomm",
+	"runArgs": [
+		"--device=/dev/kgsl-3d0",
+		"--cap-add=SYS_PTRACE"
+	],
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"VisualStudioExptTeam.vscodeintellicode",
+				"ms-vscode.cpptools-extension-pack"
+			]
+		}
+	}
+}
