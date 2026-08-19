@@ -1,3 +1,6 @@
+// need to include arm_neon definitions.
+#include <arm_neon.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -43,12 +46,27 @@ int main(int argc, char *argv[])
 
     // Sum all elements of the array
     //@@ Replace this loop with ARM Neon intrinsics
-    int sum = 0;
+    int32_t sum = 0;
 
-    for (int i = 0; i < rows * cols; i++)
+    int i;
+    int32x4_t sum_x32t = vdupq_n_s32(0);
+    int32x4_t data_x32t = vdupq_n_s32(0);
+
+    for (i = 0; i <= (rows * cols) - 4; i += 4)
+    {
+
+        // load into NEON memory
+        data_x32t = vld1q_s32(&host_a.data[i]);
+        // perform SIMD addition
+        sum_x32t = vaddq_s32(sum_x32t, data_x32t);      
+    }
+    sum = vaddvq_s32(sum_x32t);
+
+    for (; i < rows * cols; i++)
     {
         sum += host_a.data[i];
     }
+    
 
     printf("sum: %d == %d\n", sum, host_b.data[0]);
 
