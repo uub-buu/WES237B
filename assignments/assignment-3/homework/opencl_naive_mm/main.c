@@ -23,7 +23,7 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
     cl_mem device_a, device_b, device_c;
 
     cl_int err;
-    
+
     size_t global_item_size, local_item_size;
 
     cl_device_id device_id;    // device ID
@@ -94,7 +94,7 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
     err |= clEnqueueWriteBuffer(queue, device_b, CL_TRUE, 0, buffer_size_dev_b, input1->data, 0, NULL, NULL);
     err |= clEnqueueWriteBuffer(queue, device_c, CL_TRUE, 0, buffer_size_dev_c, result->data, 0 , NULL, NULL);
     //@@ define local and global work sizes
-    global_item_size = size_a;
+    global_item_size = result->shape[0] * result->shape[1]; // need to set it to to the size of my output matrix
     local_item_size = 1;
     // Set the arguments to our compute kernel
     // __global const int *A, __global const int *B, __global int *C,
@@ -121,7 +121,15 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
     CHECK_ERR(err, "clSetKernelArg 8");
 
     //@@ Launch the GPU Kernel here
-
+    err = clEnqueueNDRangeKernel(
+        queue,
+        kernel,
+        1,
+        NULL,
+        &global_item_size,
+        &local_item_size,
+        0, NULL, NULL);
+    CHECK_ERR(err, "clEnqueueNDRangeKernel");
     //@@ Copy the GPU memory back to the CPU here
 
     //@@ Free the GPU memory here
