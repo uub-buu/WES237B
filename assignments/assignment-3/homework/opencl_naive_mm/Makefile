@@ -2,6 +2,7 @@ CC       = gcc
 CFLAGS   = -g -Wall
 INCFLAGS := -I../../helper_lib
 LDFLAGS  := ../../helper_lib/helper_lib.a -lm
+DATASET_PATH := $(strip $(shell cat Dataset))
 
 ifeq ($(shell uname -o), Darwin)
 	LDFLAGS += -framework OpenCL
@@ -21,16 +22,16 @@ solution: ../../helper_lib/helper_lib.a main.c
 	cd ../../helper_lib; make
 
 run: solution
-	./solution Dataset/0/input0.raw Dataset/0/input1.raw Dataset/0/output.raw output.raw
-	./solution Dataset/1/input0.raw Dataset/1/input1.raw Dataset/1/output.raw output.raw
-	./solution Dataset/2/input0.raw Dataset/2/input1.raw Dataset/2/output.raw output.raw
-	./solution Dataset/3/input0.raw Dataset/3/input1.raw Dataset/3/output.raw output.raw
-	./solution Dataset/4/input0.raw Dataset/4/input1.raw Dataset/4/output.raw output.raw
-	./solution Dataset/5/input0.raw Dataset/5/input1.raw Dataset/5/output.raw output.raw
-	./solution Dataset/6/input0.raw Dataset/6/input1.raw Dataset/6/output.raw output.raw
-	./solution Dataset/7/input0.raw Dataset/7/input1.raw Dataset/7/output.raw output.raw
-	./solution Dataset/8/input0.raw Dataset/8/input1.raw Dataset/8/output.raw output.raw
-	./solution Dataset/9/input0.raw Dataset/9/input1.raw Dataset/9/output.raw output.raw
+	oclgrind ./solution $(DATASET_PATH)0/input0.raw $(DATASET_PATH)0/input1.raw $(DATASET_PATH)0/output.raw output.raw
+	oclgrind ./solution $(DATASET_PATH)1/input0.raw $(DATASET_PATH)1/input1.raw $(DATASET_PATH)1/output.raw output.raw
+	oclgrind ./solution $(DATASET_PATH)2/input0.raw $(DATASET_PATH)2/input1.raw $(DATASET_PATH)2/output.raw output.raw
+	oclgrind ./solution $(DATASET_PATH)3/input0.raw $(DATASET_PATH)3/input1.raw $(DATASET_PATH)3/output.raw output.raw
+	oclgrind ./solution $(DATASET_PATH)4/input0.raw $(DATASET_PATH)4/input1.raw $(DATASET_PATH)4/output.raw output.raw
+	oclgrind ./solution $(DATASET_PATH)5/input0.raw $(DATASET_PATH)5/input1.raw $(DATASET_PATH)5/output.raw output.raw
+	oclgrind ./solution $(DATASET_PATH)6/input0.raw $(DATASET_PATH)6/input1.raw $(DATASET_PATH)6/output.raw output.raw
+	oclgrind ./solution $(DATASET_PATH)7/input0.raw $(DATASET_PATH)7/input1.raw $(DATASET_PATH)7/output.raw output.raw
+	oclgrind ./solution $(DATASET_PATH)8/input0.raw $(DATASET_PATH)8/input1.raw $(DATASET_PATH)8/output.raw output.raw
+	oclgrind ./solution $(DATASET_PATH)9/input0.raw $(DATASET_PATH)9/input1.raw $(DATASET_PATH)9/output.raw output.raw
 	
 clean: 
 	rm -f solution
