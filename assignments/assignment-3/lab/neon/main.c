@@ -54,19 +54,18 @@ int main(int argc, char *argv[])
 
     for (i = 0; i <= (rows * cols) - 4; i += 4)
     {
-
         // load into NEON memory
         data_x32t = vld1q_s32(&host_a.data[i]);
         // perform SIMD addition
         sum_x32t = vaddq_s32(sum_x32t, data_x32t);      
     }
+    // perform across vector addition
     sum = vaddvq_s32(sum_x32t);
 
     for (; i < rows * cols; i++)
     {
         sum += host_a.data[i];
     }
-    
 
     printf("sum: %d == %d\n", sum, host_b.data[0]);
 
