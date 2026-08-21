@@ -23,6 +23,8 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
     cl_mem device_a, device_b, device_c;
 
     cl_int err;
+    
+    size_t global_item_size, local_item_size;
 
     cl_device_id device_id;    // device ID
     cl_context context;        // context
@@ -92,7 +94,8 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
     err |= clEnqueueWriteBuffer(queue, device_b, CL_TRUE, 0, buffer_size_dev_b, input1->data, 0, NULL, NULL);
     err |= clEnqueueWriteBuffer(queue, device_c, CL_TRUE, 0, buffer_size_dev_c, result->data, 0 , NULL, NULL);
     //@@ define local and global work sizes
-
+    global_item_size = size_a;
+    local_item_size = 1;
     // Set the arguments to our compute kernel
     // __global const int *A, __global const int *B, __global int *C,
     // const unsigned int numARows, const unsigned int numAColumns,
