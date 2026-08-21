@@ -95,8 +95,23 @@
         err |= clEnqueueWriteBuffer(queue, device_c, CL_TRUE, 0, buffer_size_dev_c, result->data, 0, NULL, NULL);
         CHECK_ERR(err, "clEnqueueWriteBuffer result");
         //@@ define local and global work sizes
-        size_t global_item_size[2] = {result->shape[0], result->shape[1]}; // need to set it to to the size of my output matrix
-        size_t local_item_size[2] = {4, 4};
+        size_t local_dim = 2;
+        size_t global_m;
+        size_t global_n;
+        if(result->shape[0] % local_dim != 0){
+            global_m = ((result->shape[0] / local_dim)* local_dim) + local_dim;
+        }else{
+            global_m = result->shape[0];
+
+        }
+        if(result->shape[1] % local_dim != 0){
+            global_n = ((result->shape[1] / local_dim)* local_dim) + local_dim;
+        }else{
+            global_n = result->shape[1];
+
+        }
+        size_t global_item_size[2] = {global_m, global_n}; // need to set it to to the size of my output matrix
+        size_t local_item_size[2] = {local_dim, local_dim};
         // Set the arguments to our compute kernel
         // __global const int *A, __global const int *B, __global int *C,
         // const unsigned int numARows, const unsigned int numAColumns,
