@@ -66,9 +66,31 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
     CHECK_ERR(err, "clCreateKernel");
 
     //@@ Allocate GPU memory here
-
+    size_t buffer_size_dev_a = (input0->shape[0] * input0->shape[1]) * sizeof(int); 
+    size_t buffer_size_dev_b = (input1->shape[0] * input1->shape[1]) * sizeof(int); 
+    size_t buffer_size_dev_c = (result->shape[0] * result->shape[1]) * sizeof(int); 
+    device_a = clCreateBuffer(context,
+                            CL_MEM_READ_WRITE,
+                            buffer_size_dev_a,
+                            NULL,
+                            &err
+                            );
+    device_b = clCreateBuffer(context,
+                            CL_MEM_READ_WRITE,
+                            buffer_size_dev_b,
+                            NULL,
+                            &err
+                            );
+    device_c = clCreateBuffer(context,
+                            CL_MEM_READ_WRITE,
+                            buffer_size_dev_c,
+                            NULL,
+                            &err
+                            );
     //@@ Copy memory to the GPU here
-
+    err = clEnqueueWriteBuffer(queue, device_a, CL_TRUE, 0, buffer_size_dev_a, input0->data, 0, NULL, NULL);
+    err |= clEnqueueWriteBuffer(queue, device_b, CL_TRUE, 0, buffer_size_dev_b, input1->data, 0, NULL, NULL);
+    err |= clEnqueueWriteBuffer(queue, device_c, CL_TRUE, 0, buffer_size_dev_c, result->data, 0 , NULL, NULL);
     //@@ define local and global work sizes
 
     // Set the arguments to our compute kernel
