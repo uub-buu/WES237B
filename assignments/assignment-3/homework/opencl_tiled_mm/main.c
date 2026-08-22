@@ -101,6 +101,10 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
     
     size_t global_item_size[2] = {global_m, global_n}; // need to set it to to the size of my output matrix
     size_t local_item_size[2] = {local_dim, local_dim};
+
+    // need a tile size to have local memeory 
+    size_t tile_size = local_item_size[0] * local_item_size[1];
+    size_t local_tile_mem =  tile_size * sizeof(int);
     // Set the arguments to our compute kernel
     // __global const int *A, __global const int *B, __global int *C,
     // const unsigned int numARows, const unsigned int numAColumns,
@@ -124,6 +128,12 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
     CHECK_ERR(err, "clSetKernelArg 7");
     err |= clSetKernelArg(kernel, 8, sizeof(unsigned int), &result->shape[1]);
     CHECK_ERR(err, "clSetKernelArg 8");
+    err |= clSetKernelArg(kernel, 9, local_tile_mem, NULL);
+    CHECK_ERR(err, "clSetKernelArg 9");
+    err |= clSetKernelArg(kernel, 10, local_tile_mem, NULL);
+    CHECK_ERR(err, "clSetKernelArg 10");
+    err |= clSetKernelArg(kernel, 11, sizeof(size_t), &tile_size);
+    CHECK_ERR(err, "clSetKernelArg 11");
 
     //@@ Launch the GPU Kernel here
     err = clEnqueueNDRangeKernel(
