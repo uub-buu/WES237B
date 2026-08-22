@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
     OpenCLMatrixMultiply(&host_a, &host_b, &host_c);
 
     // // Call to print the matrix
-    PrintMatrix(&host_c);
+    //PrintMatrix(&host_c);
 
     // Save the matrix
     SaveMatrix(input_file_d, &host_c);
