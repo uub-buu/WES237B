@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "device.h"
 #include "kernel.h"
@@ -103,7 +104,7 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
     size_t local_item_size[2] = {local_dim, local_dim};
 
     // need a tile size to have local memeory 
-    size_t tile_size = local_item_size[0] * local_item_size[1];
+    size_t tile_size = local_dim * local_dim;
     size_t local_tile_mem =  tile_size * sizeof(int);
     // Set the arguments to our compute kernel
     // __global const int *A, __global const int *B, __global int *C,
@@ -132,7 +133,7 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
     CHECK_ERR(err, "clSetKernelArg 9");
     err |= clSetKernelArg(kernel, 10, local_tile_mem, NULL);
     CHECK_ERR(err, "clSetKernelArg 10");
-    err |= clSetKernelArg(kernel, 11, sizeof(size_t), &tile_size);
+    err |= clSetKernelArg(kernel, 11, sizeof(int), &local_dim);
     CHECK_ERR(err, "clSetKernelArg 11");
 
     //@@ Launch the GPU Kernel here
