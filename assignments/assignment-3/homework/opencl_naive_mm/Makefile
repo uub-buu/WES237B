@@ -22,17 +22,18 @@ solution: ../../helper_lib/helper_lib.a main.c
 	cd ../../helper_lib; make
 
 run: solution
-	oclgrind ./solution $(DATASET_PATH)0/input0.raw $(DATASET_PATH)0/input1.raw $(DATASET_PATH)0/output.raw output.raw
-	oclgrind ./solution $(DATASET_PATH)1/input0.raw $(DATASET_PATH)1/input1.raw $(DATASET_PATH)1/output.raw output.raw
-	oclgrind ./solution $(DATASET_PATH)2/input0.raw $(DATASET_PATH)2/input1.raw $(DATASET_PATH)2/output.raw output.raw
-	oclgrind ./solution $(DATASET_PATH)3/input0.raw $(DATASET_PATH)3/input1.raw $(DATASET_PATH)3/output.raw output.raw
-	oclgrind ./solution $(DATASET_PATH)4/input0.raw $(DATASET_PATH)4/input1.raw $(DATASET_PATH)4/output.raw output.raw
-	oclgrind ./solution $(DATASET_PATH)5/input0.raw $(DATASET_PATH)5/input1.raw $(DATASET_PATH)5/output.raw output.raw
-	oclgrind ./solution $(DATASET_PATH)6/input0.raw $(DATASET_PATH)6/input1.raw $(DATASET_PATH)6/output.raw output.raw
-	oclgrind ./solution $(DATASET_PATH)7/input0.raw $(DATASET_PATH)7/input1.raw $(DATASET_PATH)7/output.raw output.raw
-	oclgrind ./solution $(DATASET_PATH)8/input0.raw $(DATASET_PATH)8/input1.raw $(DATASET_PATH)8/output.raw output.raw
-	oclgrind ./solution $(DATASET_PATH)9/input0.raw $(DATASET_PATH)9/input1.raw $(DATASET_PATH)9/output.raw output.raw
-	
+	./solution $(DATASET_PATH)0/input0.raw $(DATASET_PATH)0/input1.raw $(DATASET_PATH)0/output.raw output.raw
+	./solution $(DATASET_PATH)1/input0.raw $(DATASET_PATH)1/input1.raw $(DATASET_PATH)1/output.raw output.raw
+	./solution $(DATASET_PATH)2/input0.raw $(DATASET_PATH)2/input1.raw $(DATASET_PATH)2/output.raw output.raw
+	./solution $(DATASET_PATH)3/input0.raw $(DATASET_PATH)3/input1.raw $(DATASET_PATH)3/output.raw output.raw
+	./solution $(DATASET_PATH)4/input0.raw $(DATASET_PATH)4/input1.raw $(DATASET_PATH)4/output.raw output.raw
+	./solution $(DATASET_PATH)5/input0.raw $(DATASET_PATH)5/input1.raw $(DATASET_PATH)5/output.raw output.raw
+	./solution $(DATASET_PATH)6/input0.raw $(DATASET_PATH)6/input1.raw $(DATASET_PATH)6/output.raw output.raw
+	./solution $(DATASET_PATH)7/input0.raw $(DATASET_PATH)7/input1.raw $(DATASET_PATH)7/output.raw output.raw
+	./solution $(DATASET_PATH)8/input0.raw $(DATASET_PATH)8/input1.raw $(DATASET_PATH)8/output.raw output.raw
+	./solution $(DATASET_PATH)9/input0.raw $(DATASET_PATH)9/input1.raw $(DATASET_PATH)9/output.raw output.raw
+	./solution $(DATASET_PATH)10/input0.raw $(DATASET_PATH)10/input1.raw $(DATASET_PATH)10/output.raw output.raw
+
 clean: 
 	rm -f solution
 	cd ../../helper_lib; make clean

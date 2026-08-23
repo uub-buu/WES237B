@@ -32,6 +32,7 @@ run: solution
 	./solution $(DATASET_PATH)7/input0.raw $(DATASET_PATH)7/input1.raw $(DATASET_PATH)7/output.raw output.raw
 	./solution $(DATASET_PATH)8/input0.raw $(DATASET_PATH)8/input1.raw $(DATASET_PATH)8/output.raw output.raw
 	./solution $(DATASET_PATH)9/input0.raw $(DATASET_PATH)9/input1.raw $(DATASET_PATH)9/output.raw output.raw
+	./solution $(DATASET_PATH)10/input0.raw $(DATASET_PATH)10/input1.raw $(DATASET_PATH)10/output.raw output.raw
 
 clean: 
 	rm -f solution

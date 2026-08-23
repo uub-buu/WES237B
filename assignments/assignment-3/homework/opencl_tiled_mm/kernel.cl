@@ -16,7 +16,6 @@
     int local_tile_index = (local_row * tile_dim) + local_col;
     
     int index_c = row * numCColumns + col;
-    C[index_c] = 0;
     int sum = 0;
 
     for(int t = 0; t < ((numAColumns + tile_dim - 1) / tile_dim); t++){
