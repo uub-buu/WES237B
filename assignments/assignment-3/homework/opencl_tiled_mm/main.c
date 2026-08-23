@@ -96,7 +96,7 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
     err |= clEnqueueWriteBuffer(queue, device_c, CL_TRUE, 0, buffer_size_dev_c, result->data, 0, NULL, NULL);
     CHECK_ERR(err, "clEnqueueWriteBuffer result");
     //@@ define local and global work sizes
-    size_t local_dim = 2;
+    size_t local_dim = 8;
     size_t global_m = ((result->shape[0] + local_dim - 1) / local_dim) * local_dim;
     size_t global_n = ((result->shape[1] + local_dim - 1) / local_dim) * local_dim;
     
