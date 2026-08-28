@@ -13,7 +13,7 @@
 
 void NeonBlockMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
 {
-    int block_size = 4;
+    int block_size = 64;
     int input0_height = input0->shape[0];
     int input0_width = input0->shape[1];
     //int input1_height = input1->shape[0];
