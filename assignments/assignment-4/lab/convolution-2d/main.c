@@ -73,10 +73,9 @@ void OpenCLConvolution2D(Image *input0, Matrix *input1, Image *result, int strid
     CHECK_ERR(err, "clCreateKernel");
 
     //@@ Allocate GPU memory here
-    size_t buffer_input0 = sizeof(int) * input0->shape[0] * input0->shape[1] * 3;
+    size_t buffer_input0 = sizeof(int) * input0->shape[0] * input0->shape[1] * IMAGE_CHANNELS;
     size_t buffer_input1 = sizeof(int) * input1->shape[0] * input1->shape[1];
-    size_t buffer_result = sizeof(int) * result->shape[0] * result->shape[1] * 3;
-    //@@ Copy memory to the GPU here
+    size_t buffer_result = sizeof(int) * result->shape[0] * result->shape[1] * IMAGE_CHANNELS;
     /* buffer for input image*/
     device_a = clCreateBuffer(
         context,
@@ -98,6 +97,13 @@ void OpenCLConvolution2D(Image *input0, Matrix *input1, Image *result, int strid
         buffer_result,
         NULL,
         &err);
+    //@@ Copy memory to the GPU here
+    err = clEnqueueWriteBuffer(queue, device_a, CL_TRUE, 0, buffer_input0, input0->data, 0, NULL, NULL);
+    CHECK_ERR(err, "clEnqueueWriteBuffer input0");
+    err |= clEnqueueWriteBuffer(queue, device_b, CL_TRUE, 0, buffer_input1, input1->data, 0, NULL, NULL);
+    CHECK_ERR(err, "clEnqueueWriteBuffer input1");
+    err |= clEnqueueWriteBuffer(queue, device_c, CL_TRUE, 0, buffer_result, result->data, 0, NULL, NULL);
+    CHECK_ERR(err, "clEnqueueWriteBuffer result");
     // Set the arguments to our compute kernel
     // __global float * inputData, __global float * outputData, __constant float * maskData,
     // int width, int height, int maskWidth,  int imageChannels
@@ -140,6 +146,7 @@ void OpenCLConvolution2D(Image *input0, Matrix *input1, Image *result, int strid
     CHECK_ERR(err, "clEnqueueNDRangeKernel");
 
     //@@ Copy the GPU memory back to the CPU here
+
     // Read the memory buffer output_mem_obj to the local variable result
     err = clEnqueueReadBuffer(
         queue,
@@ -205,8 +212,8 @@ int main(int argc, char *argv[])
     int rows, cols;
     //@@ Update these values for the output rows and cols of the output
     //@@ Do not use the results from the answer image
-    rows = host_a.shape[0];
-    cols = host_b.shape[1];
+    rows = COMPUTE_OUTUT_DIM(host_a.shape[0], host_b.shape[0], stride);
+    cols = COMPUTE_OUTUT_DIM(host_a.shape[1], host_b.shape[1], stride);
 
     // Allocate the memory for the target.
     host_c.shape[0] = rows;
