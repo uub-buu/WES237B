@@ -12,7 +12,7 @@
         exit(EXIT_FAILURE);                           \
     }
 
-void blockMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
+void BlockMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
 {
     // answer for matrix result is stored in data array.
     // starting from first row first column -> first row, last column -> second row, first column. until we get to last row last column
@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
     memset(host_c.data , 0, sizeof(int) * host_c.shape[0] * host_c.shape[1]); 
 
     // Call your matrix multiply.
-    blockMatrixMultiply(&host_a, &host_b, &host_c);
+    BlockMatrixMultiply(&host_a, &host_b, &host_c);
 
     // // Call to print the matrix
     // PrintMatrix(&host_c);
