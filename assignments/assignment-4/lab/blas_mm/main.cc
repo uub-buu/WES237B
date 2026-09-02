@@ -91,11 +91,11 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
     CHECK_ERR(err, "clCreateBuffer result");
 
     //@@ Copy memory to the GPU here
-    err = clEnqueueWriteBuffer(queue, device_a, CL_TRUE, 0, buffer_size_dev_a, input0->data, 0, NULL, NULL);
+    err = clEnqueueWriteBuffer(queue, device_a, CL_TRUE, 0, buffer_size_dev_a, h_A, 0, NULL, NULL);
     CHECK_ERR(err, "clEnqueueWriteBuffer input0");
-    err |= clEnqueueWriteBuffer(queue, device_b, CL_TRUE, 0, buffer_size_dev_b, input1->data, 0, NULL, NULL);
+    err |= clEnqueueWriteBuffer(queue, device_b, CL_TRUE, 0, buffer_size_dev_b, h_B, 0, NULL, NULL);
     CHECK_ERR(err, "clEnqueueWriteBuffer input1");
-    err |= clEnqueueWriteBuffer(queue, device_c, CL_TRUE, 0, buffer_size_dev_c, result->data, 0, NULL, NULL);
+    err |= clEnqueueWriteBuffer(queue, device_c, CL_TRUE, 0, buffer_size_dev_c, h_C, 0, NULL, NULL);
     CHECK_ERR(err, "clEnqueueWriteBuffer result");
     //@@ Call GEMM here
     // C (m x n) = A (m x k) * B (k x n)
@@ -131,6 +131,8 @@ void OpenCLMatrixMultiply(Matrix *input0, Matrix *input1, Matrix *result)
     clReleaseMemObject(device_c);
     clReleaseCommandQueue(queue);
     clReleaseContext(context);
+
+    clblast::ClearCache();
 
     // Copy back from h_C to result
     for (unsigned int i = 0; i < result->shape[0] * result->shape[1]; ++i)
@@ -180,7 +182,7 @@ int main(int argc, char *argv[])
     host_c.shape[0] = rows;
     host_c.shape[1] = cols;
     host_c.data = (int *)malloc(sizeof(int) * host_c.shape[0] * host_c.shape[1]);
-    memset(host_c.data, 0, sizeof(int) * host_c.shape[0] * host_c.shape[1]);
+    
     // Call your matrix multiply.
     OpenCLMatrixMultiply(&host_a, &host_b, &host_c);
 
