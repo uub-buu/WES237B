@@ -68,8 +68,6 @@ void OpenCLInterface::conv_forward_gemm_opencl_prolog(
     err = clEnqueueWriteBuffer(opencl->queue, *device_k, CL_TRUE, 0, buffer_size_dev_k, host_k, 0, NULL, NULL);
     CHECK_ERR(err, "clEnqueueWriteBuffer for device_k");
 
-    err = clEnqueueWriteBuffer(opencl->queue, *device_x_unroll, CL_TRUE, 0, buffer_size_dev_unroll, NULL, 0, NULL, NULL);
-    CHECK_ERR(err, "clEnqueueWriteBuffer for device_y");
 }
 
 void OpenCLInterface::conv_forward_gemm_opencl(cl_mem device_y, const cl_mem device_x, const cl_mem device_k, const cl_mem device_x_unroll, const int B, const int M, const int C, const int H, const int W, const int K)
