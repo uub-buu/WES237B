@@ -9,6 +9,7 @@
 
 #include "opencl-new-forward.h"
 
+#define TILE_SIZE 16
 #define CHECK_ERR(err, msg)                            \
     if (err != CL_SUCCESS)                             \
     {                                                  \
@@ -62,22 +63,46 @@ void OpenCLInterface::conv_forward_gemm_opencl_prolog(
     err = clEnqueueWriteBuffer(opencl->queue, *device_y, CL_TRUE, 0, buffer_size_dev_y, host_y, 0, NULL, NULL);
     CHECK_ERR(err, "clEnqueueWriteBuffer for device_y");
 
-    err = clEnqueueWriteBuffer(opencl->queue, *device_x, CL_TRUE, 0, buffer_size_dev_x, host_x, 0, NULL, NULL);
+    err |= clEnqueueWriteBuffer(opencl->queue, *device_x, CL_TRUE, 0, buffer_size_dev_x, host_x, 0, NULL, NULL);
     CHECK_ERR(err, "clEnqueueWriteBuffer for device_x");
 
-    err = clEnqueueWriteBuffer(opencl->queue, *device_k, CL_TRUE, 0, buffer_size_dev_k, host_k, 0, NULL, NULL);
+    err |= clEnqueueWriteBuffer(opencl->queue, *device_k, CL_TRUE, 0, buffer_size_dev_k, host_k, 0, NULL, NULL);
     CHECK_ERR(err, "clEnqueueWriteBuffer for device_k");
-
 }
 
 void OpenCLInterface::conv_forward_gemm_opencl(cl_mem device_y, const cl_mem device_x, const cl_mem device_k, const cl_mem device_x_unroll, const int B, const int M, const int C, const int H, const int W, const int K)
 {
     //@@ ====== Start im2col =====
-
+    // need to track errors
+    cl_int err;
     // @@ define local and global work sizes
-
+    size_t global_item_size[3] = {C * K * K, (H - K + 1) * (W - K + 1), 1};
+    size_t local_item_size[3] = {TILE_SIZE, TILE_SIZE, 1};
     //@@ Launch the im2col kernel here
+    err = clSetKernelArg(opencl->im2col_kernel, 0, sizeof(cl_mem), &device_x_unroll);
+    CHECK_ERR(err, "clSetKernelArg 0");
+    err |= clSetKernelArg(opencl->im2col_kernel, 1, sizeof(cl_mem), &device_x);
+    CHECK_ERR(err, "clSetKernelArg 0");
+    err |= clSetKernelArg(opencl->im2col_kernel, 2, sizeof(int), &B);
+    CHECK_ERR(err, "clSetKernelArg 0");
+    err |= clSetKernelArg(opencl->im2col_kernel, 3, sizeof(int), &C);
+    CHECK_ERR(err, "clSetKernelArg 0");
+    err |= clSetKernelArg(opencl->im2col_kernel, 4, sizeof(int), &H);
+    CHECK_ERR(err, "clSetKernelArg 0");
+    err |= clSetKernelArg(opencl->im2col_kernel, 5, sizeof(int), &W);
+    CHECK_ERR(err, "clSetKernelArg 0");
+    err |= clSetKernelArg(opencl->im2col_kernel, 6, sizeof(int), &K);
+    CHECK_ERR(err, "clSetKernelArg 0");
 
+    err = clEnqueueNDRangeKernel(
+        opencl->queue,
+        opencl->im2col_kernel,
+        1,
+        NULL,
+        global_item_size,
+        local_item_size,
+        0, NULL, NULL);
+    CHECK_ERR(err, "clEnqueueNDRangeKernel");
     //@@ ====== End im2col =====
 
     //@@ ====== Start gemm =====
