@@ -106,8 +106,31 @@ void OpenCLInterface::conv_forward_gemm_opencl(cl_mem device_y, const cl_mem dev
     //@@ ====== End im2col =====
 
     //@@ ====== Start gemm =====
+    // C (m x n) = A (m x k) * B (k x n)
+    // size of unrolled is (B, C×K×K, (H − K + 1)×(W − K + 1))
+    const size_t m = C*K*K;
+    const size_t n = input1->shape[1];
+    //from conv_cust.h -> size=channel_in*h_kernel*w_kernel*channel_out
+    const size_t k = C * K * K * M;
+
+    std::vector<size_t> k_offsets = std::vector<size_t>(B, 0);
+    std::vector<size_t> x_offsets = std::vector<size_t>(B, 0);
+    std::vector<size_t> y_offsets = std::vector<size_t>(B, 0);
+
+    std::vector<float> alphas = std::vector<float>(B, 1);
+    std::vector<float> betas = std::vector<float>(B, 0);
 
     // @@ Call clblast::GemmBatched here
+    clblast::StatusCode clblast_err = clblast::GemmBatched(clblast::Layout::kRowMajor, clblast::Transpose::kNo, clblast::Transpose::kNo,
+                                                           m, n, k,
+                                                           alphas.data(),
+                                                           device_x, x_offsets.data(), k,
+                                                           device_k, k_offsets.data(), n,
+                                                           betas.data(),
+                                                           device_y, y_offsets.data(), n,
+                                                           B,
+                                                           opencl->queue, nullptr);
+    CHECK_ERR((cl_int)clblast_err, "clblast::GemmBatched");
 
     //@@ ====== End gemm =====
 }
