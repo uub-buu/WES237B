@@ -17,6 +17,10 @@
         exit(EXIT_FAILURE);                            \
     }
 
+size_t buffer_size_dev_x;
+size_t buffer_size_dev_y;
+size_t buffer_size_dev_k;
+size_t buffer_size_dev_unroll;
 void OpenCLInterface::conv_forward_gemm_opencl_prolog(
     const float *host_y, const float *host_x, const float *host_k,
     cl_mem *device_y, cl_mem *device_x, cl_mem *device_k, cl_mem *device_x_unroll,
@@ -29,10 +33,10 @@ void OpenCLInterface::conv_forward_gemm_opencl_prolog(
     int output_row = H - K + 1;
     int output_col = W - K + 1;
     // define buffer sizes for all our memory devicesz
-    size_t buffer_size_dev_x = W * H * C * B * sizeof(float);
-    size_t buffer_size_dev_y = output_col * output_row * M * B * sizeof(float);
-    size_t buffer_size_dev_k = K * K * sizeof(float);
-    size_t buffer_size_dev_unroll = B * C * K * K * output_col * output_row * sizeof(float);
+    buffer_size_dev_x = W * H * C * B * sizeof(float);
+    buffer_size_dev_y = output_col * output_row * M * B * sizeof(float);
+    buffer_size_dev_k = K * K * sizeof(float);
+    buffer_size_dev_unroll = B * C * K * K * output_col * output_row * sizeof(float);
 
     *device_y = clCreateBuffer(opencl->context,
                                CL_MEM_READ_WRITE,
@@ -108,10 +112,10 @@ void OpenCLInterface::conv_forward_gemm_opencl(cl_mem device_y, const cl_mem dev
     //@@ ====== Start gemm =====
     // C (m x n) = A (m x k) * B (k x n)
     // size of unrolled is (B, C×K×K, (H − K + 1)×(W − K + 1))
-    const size_t m = C*K*K;
-    const size_t n = input1->shape[1];
-    //from conv_cust.h -> size=channel_in*h_kernel*w_kernel*channel_out
-    const size_t k = C * K * K * M;
+    // from conv_cust.h -> size=channel_in*h_kernel*w_kernel*channel_out
+    const size_t m = M;
+    const size_t n = (H - K + 1) * (W - K + 1);
+    const size_t k = C * K * K;
 
     std::vector<size_t> k_offsets = std::vector<size_t>(B, 0);
     std::vector<size_t> x_offsets = std::vector<size_t>(B, 0);
@@ -121,15 +125,16 @@ void OpenCLInterface::conv_forward_gemm_opencl(cl_mem device_y, const cl_mem dev
     std::vector<float> betas = std::vector<float>(B, 0);
 
     // @@ Call clblast::GemmBatched here
-    clblast::StatusCode clblast_err = clblast::GemmBatched(clblast::Layout::kRowMajor, clblast::Transpose::kNo, clblast::Transpose::kNo,
+    clblast::StatusCode clblast_err = clblast::GemmBatched(clblast::Layout::kRowMajor,
+                                                           clblast::Transpose::kNo, clblast::Transpose::kNo,
                                                            m, n, k,
                                                            alphas.data(),
-                                                           device_x, x_offsets.data(), k,
-                                                           device_k, k_offsets.data(), n,
+                                                           device_k, k_offsets.data(), k,
+                                                           device_x_unroll, x_offsets.data(), n,
                                                            betas.data(),
                                                            device_y, y_offsets.data(), n,
                                                            B,
-                                                           opencl->queue, nullptr);
+                                                           &opencl->queue, nullptr);
     CHECK_ERR((cl_int)clblast_err, "clblast::GemmBatched");
 
     //@@ ====== End gemm =====
@@ -138,6 +143,25 @@ void OpenCLInterface::conv_forward_gemm_opencl(cl_mem device_y, const cl_mem dev
 void OpenCLInterface::conv_forward_gemm_opencl_epilog(float *host_y, cl_mem device_y, cl_mem device_x, cl_mem device_k, cl_mem device_x_unroll, const int B, const int M, const int C, const int H, const int W, const int K)
 {
     //@@ Copy the output back to host
-
+    cl_int err;
+    err = clEnqueueReadBuffer(
+        opencl->queue,
+        device_y,
+        CL_TRUE,
+        0,
+        buffer_size_dev_c,
+        result->data,
+        0,
+        NULL,
+        NULL);
+    CHECK_ERR(err, "clEnqueueReadBuffer");
     //@@ Free the GPU memory here
+        clReleaseMemObject(device_a);
+    clReleaseMemObject(device_b);
+    clReleaseMemObject(device_c);
+    // idk if this is needed?
+    clReleaseKernel(kernel);
+    clReleaseProgram(program);
+    // Release Host Memory
+    free(kernel_source);
 }
