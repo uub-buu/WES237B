@@ -21,6 +21,7 @@ size_t buffer_size_dev_x;
 size_t buffer_size_dev_y;
 size_t buffer_size_dev_k;
 size_t buffer_size_dev_unroll;
+
 void OpenCLInterface::conv_forward_gemm_opencl_prolog(
     const float *host_y, const float *host_x, const float *host_k,
     cl_mem *device_y, cl_mem *device_x, cl_mem *device_k, cl_mem *device_x_unroll,
@@ -138,6 +139,8 @@ void OpenCLInterface::conv_forward_gemm_opencl(cl_mem device_y, const cl_mem dev
     CHECK_ERR((cl_int)clblast_err, "clblast::GemmBatched");
 
     //@@ ====== End gemm =====
+    clblast::ClearCache();
+
 }
 
 void OpenCLInterface::conv_forward_gemm_opencl_epilog(float *host_y, cl_mem device_y, cl_mem device_x, cl_mem device_k, cl_mem device_x_unroll, const int B, const int M, const int C, const int H, const int W, const int K)
@@ -160,8 +163,7 @@ void OpenCLInterface::conv_forward_gemm_opencl_epilog(float *host_y, cl_mem devi
     clReleaseMemObject(device_y);
     clReleaseMemObject(device_k);
     clReleaseMemObject(device_x_unroll);
-    // idk if this is needed?
-    clReleaseKernel(opencl->im2col_kernel);
-    clReleaseProgram(opencl->program);
-    clblast::ClearCache();
+
+    // Release the malloc'd memory
+    free(host_y);
 }
