@@ -9,7 +9,7 @@ __pycache__/
 *.pyo
 *.pyd
 *.env
-
+*.zip
 vector_store/
 
 
