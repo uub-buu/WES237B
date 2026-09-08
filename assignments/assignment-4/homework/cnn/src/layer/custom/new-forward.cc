@@ -149,19 +149,19 @@ void OpenCLInterface::conv_forward_gemm_opencl_epilog(float *host_y, cl_mem devi
         device_y,
         CL_TRUE,
         0,
-        buffer_size_dev_c,
-        result->data,
+        buffer_size_dev_y,
+        host_y,
         0,
         NULL,
         NULL);
     CHECK_ERR(err, "clEnqueueReadBuffer");
     //@@ Free the GPU memory here
-        clReleaseMemObject(device_a);
-    clReleaseMemObject(device_b);
-    clReleaseMemObject(device_c);
+    clReleaseMemObject(device_x);
+    clReleaseMemObject(device_y);
+    clReleaseMemObject(device_k);
+    clReleaseMemObject(device_x_unroll);
     // idk if this is needed?
-    clReleaseKernel(kernel);
-    clReleaseProgram(program);
-    // Release Host Memory
-    free(kernel_source);
+    clReleaseKernel(opencl->im2col_kernel);
+    clReleaseProgram(opencl->program);
+    clblast::ClearCache();
 }
