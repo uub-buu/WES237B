@@ -36,7 +36,7 @@ void OpenCLInterface::conv_forward_gemm_opencl_prolog(
     // define buffer sizes for all our memory devicesz
     buffer_size_dev_x = W * H * C * B * sizeof(float);
     buffer_size_dev_y = output_col * output_row * M * B * sizeof(float);
-    buffer_size_dev_k = K * K * sizeof(float);
+    buffer_size_dev_k = M * C * K * K * sizeof(float);
     buffer_size_dev_unroll = B * C * K * K * output_col * output_row * sizeof(float);
 
     *device_y = clCreateBuffer(opencl->context,
@@ -65,8 +65,6 @@ void OpenCLInterface::conv_forward_gemm_opencl_prolog(
                                &err);
     CHECK_ERR(err, "clCreateBuffer for device_k");
     //@@ Copy memory to the GPU here
-    err = clEnqueueWriteBuffer(opencl->queue, *device_y, CL_TRUE, 0, buffer_size_dev_y, host_y, 0, NULL, NULL);
-    CHECK_ERR(err, "clEnqueueWriteBuffer for device_y");
 
     err |= clEnqueueWriteBuffer(opencl->queue, *device_x, CL_TRUE, 0, buffer_size_dev_x, host_x, 0, NULL, NULL);
     CHECK_ERR(err, "clEnqueueWriteBuffer for device_x");
@@ -81,28 +79,38 @@ void OpenCLInterface::conv_forward_gemm_opencl(cl_mem device_y, const cl_mem dev
     // need to track errors
     cl_int err;
     // @@ define local and global work sizes
-    size_t global_item_size[3] = {C * K * K, (H - K + 1) * (W - K + 1), 1};
+    //size_t global_item_size[3] = {(H - K + 1) * (W - K + 1), C * K * K, 1};
     size_t local_item_size[3] = {TILE_SIZE, TILE_SIZE, 1};
+
+    auto round_up = [](size_t val, size_t tile) {
+        return ((val + tile - 1) / tile) * tile;
+    };
+
+    size_t global_item_size[3] = {
+        round_up((H - K + 1) * (W - K + 1), local_item_size[0]), // Dim 0: col_id
+        round_up(C * K * K,     local_item_size[1]), // Dim 1: row_id
+        round_up(B,             local_item_size[2])  // Dim 2: batch_id
+    };
     //@@ Launch the im2col kernel here
     err = clSetKernelArg(opencl->im2col_kernel, 0, sizeof(cl_mem), &device_x_unroll);
     CHECK_ERR(err, "clSetKernelArg 0");
     err |= clSetKernelArg(opencl->im2col_kernel, 1, sizeof(cl_mem), &device_x);
-    CHECK_ERR(err, "clSetKernelArg 0");
+    CHECK_ERR(err, "clSetKernelArg 1");
     err |= clSetKernelArg(opencl->im2col_kernel, 2, sizeof(int), &B);
-    CHECK_ERR(err, "clSetKernelArg 0");
+    CHECK_ERR(err, "clSetKernelArg 2");
     err |= clSetKernelArg(opencl->im2col_kernel, 3, sizeof(int), &C);
-    CHECK_ERR(err, "clSetKernelArg 0");
+    CHECK_ERR(err, "clSetKernelArg 3");
     err |= clSetKernelArg(opencl->im2col_kernel, 4, sizeof(int), &H);
-    CHECK_ERR(err, "clSetKernelArg 0");
+    CHECK_ERR(err, "clSetKernelArg 4");
     err |= clSetKernelArg(opencl->im2col_kernel, 5, sizeof(int), &W);
-    CHECK_ERR(err, "clSetKernelArg 0");
+    CHECK_ERR(err, "clSetKernelArg 5");
     err |= clSetKernelArg(opencl->im2col_kernel, 6, sizeof(int), &K);
-    CHECK_ERR(err, "clSetKernelArg 0");
+    CHECK_ERR(err, "clSetKernelArg 6");
 
     err = clEnqueueNDRangeKernel(
         opencl->queue,
         opencl->im2col_kernel,
-        1,
+        3,
         NULL,
         global_item_size,
         local_item_size,
@@ -119,9 +127,14 @@ void OpenCLInterface::conv_forward_gemm_opencl(cl_mem device_y, const cl_mem dev
     const size_t k = C * K * K;
 
     std::vector<size_t> k_offsets = std::vector<size_t>(B, 0);
-    std::vector<size_t> x_offsets = std::vector<size_t>(B, 0);
-    std::vector<size_t> y_offsets = std::vector<size_t>(B, 0);
-
+    std::vector<size_t> x_offsets = std::vector<size_t>(B);
+    std::vector<size_t> y_offsets = std::vector<size_t>(B);
+    // okay so if B is the batches and our x and y offsets are our results for the batches then we need
+    // to adjust the elements which represents the starting point of each batch. If B is 1 then this isnt needed
+    for (int i = 0; i < B; ++i) {
+        x_offsets[i] = i * (k * n);
+        y_offsets[i] = i * (m * n);
+    }
     std::vector<float> alphas = std::vector<float>(B, 1);
     std::vector<float> betas = std::vector<float>(B, 0);
 
@@ -163,7 +176,4 @@ void OpenCLInterface::conv_forward_gemm_opencl_epilog(float *host_y, cl_mem devi
     clReleaseMemObject(device_y);
     clReleaseMemObject(device_k);
     clReleaseMemObject(device_x_unroll);
-
-    // Release the malloc'd memory
-    free(host_y);
 }
