@@ -31,7 +31,8 @@ run: solution
 	./solution Dataset/7/input0.raw Dataset/7/input1.raw Dataset/7/output.raw output.raw
 	./solution Dataset/8/input0.raw Dataset/8/input1.raw Dataset/8/output.raw output.raw
 	./solution Dataset/9/input0.raw Dataset/9/input1.raw Dataset/9/output.raw output.raw
-	
+	./solution Dataset/10/input0.raw Dataset/10/input1.raw Dataset/10/output.raw output.raw
+
 clean: 
 	rm -f solution
 	cd ../../helper_lib; make clean
